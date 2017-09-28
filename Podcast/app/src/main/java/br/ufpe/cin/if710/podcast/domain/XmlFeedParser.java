@@ -72,8 +72,9 @@ public class XmlFeedParser {
             if (name.equals("title")) {
                 title = readData(parser, "title");
             }
-            else if (name.equals("link")) {
-                link = readData(parser, "link");
+            //the link tag name is guid insted of "link"
+            else if (name.equals("guid")) {
+                link = readData(parser, "guid");
             }
             else if (name.equals("pubDate")) {
                 pubDate = readData(parser, "pubDate");
@@ -82,7 +83,6 @@ public class XmlFeedParser {
                 description = readData(parser, "description");
             }
             else if (name.equals("enclosure")) {
-                //TODO implementar resto do metodo para pegar atributo url da tag enclosure
                 downloadLink = readEnclosure(parser);
                 skip(parser);
             }
@@ -112,12 +112,13 @@ public class XmlFeedParser {
         }
         return result;
     }
+    //TODO verificar se é um padrão do enclosure a url vir como primeiro atributo
     // Processa tags do tipo <enclosure> para obter dados do episodio
     public static String readEnclosure(XmlPullParser parser)
             throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, null, "enclosure");
-        String data =  parser.getAttributeValue(0);
-        return data;
+        //Estou recuperando apenas o primeiro atributo da tag enclosure, que é o link
+        return parser.getAttributeValue(0);
     }
 
 
