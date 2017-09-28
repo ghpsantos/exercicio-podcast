@@ -82,7 +82,7 @@ public class MainActivity extends Activity {
         if(isConnected(getApplicationContext())){
             new DownloadXmlAndSaveInDatabaseTask().execute(RSS_FEED);
         }else{
-            new DatabaseRetrieveDataTask().execute();
+            new DatabaseRetrieveDataTask().execute(RSS_FEED);
         }
 
     }
@@ -148,10 +148,12 @@ public class MainActivity extends Activity {
 
             //inserting data in database trough iterator
             Iterator<ItemFeed> ifIterator = feed.iterator();
-            ContentResolver cr = getContentResolver();
+
+            ContentResolver cr;
+            ContentValues cv = new ContentValues();
 
             while(ifIterator.hasNext()){
-                ContentValues cv = new ContentValues();
+                cr = getContentResolver();
                 ItemFeed itemFeed = ifIterator.next();
                 //data
                 cv.put(PodcastDBHelper.EPISODE_TITLE, itemFeed.getTitle());
@@ -162,10 +164,6 @@ public class MainActivity extends Activity {
 
                 cr.insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
             }
-
-            Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
-            String s = null;
-            s= "Oi";
         }
     }
 
@@ -178,27 +176,21 @@ public class MainActivity extends Activity {
 
         @Override
         protected List<ItemFeed> doInBackground(String... params) {
-            List<ItemFeed> itemList = new ArrayList<>();
-
             ContentResolver cr = getContentResolver();
             Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
 
-            ArrayList<ItemFeed> itemFeeds = new ArrayList<ItemFeed>();
-            c.moveToFirst();
-            Toast.makeText(getApplicationContext(), "OIiiiiiiiiii", Toast.LENGTH_SHORT).show();
-            while(!c.isAfterLast()){
-                //String title, String link, String pubDate, String description, String downloadLink
+            ArrayList<ItemFeed> itemFeeds = new ArrayList<>();
+            while(c.moveToNext()){
                 String title = c.getString(c.getColumnIndex(PodcastProviderContract.TITLE));
                 String link = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
                 String pubDate = c.getString(c.getColumnIndex(PodcastProviderContract.DATE));
                 String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
                 String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
-                Toast.makeText(getApplicationContext(), title + " " + link, Toast.LENGTH_SHORT).show();
-                Toast.makeText(getApplicationContext(), "OIiiiiiiiiii", Toast.LENGTH_SHORT).show();
-                break;
+
+                itemFeeds.add(new ItemFeed(title,link,pubDate,description,downloadLink));
             }
 
-            return itemList;
+            return itemFeeds;
         }
 
         @Override
