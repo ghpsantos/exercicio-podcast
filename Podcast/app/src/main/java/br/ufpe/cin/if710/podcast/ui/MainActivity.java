@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
                 String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
                 String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
 
-                itemFeeds.add(new Itgit semFeed(title,link,pubDate,description,downloadLink));
+                itemFeeds.add(new ItemFeed(title,link,pubDate,description,downloadLink));
             }
 
             return itemFeeds;
