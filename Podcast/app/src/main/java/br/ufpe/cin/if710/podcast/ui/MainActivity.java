@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
@@ -217,11 +218,9 @@ public class MainActivity extends Activity {
 
             //Adapter Personalizado
             XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
-
             //atualizar o list view
             items.setAdapter(adapter);
             items.setTextFilterEnabled(true);
-
             items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -233,7 +232,6 @@ public class MainActivity extends Activity {
                     startActivity(i);
                 }
             });
-
 
         }
     }
@@ -264,27 +262,28 @@ public class MainActivity extends Activity {
 
     //OnButton Click methods listeners for download Button
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
-//        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
-//    }
-//
-//    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
-//        public void onReceive(Context ctxt, Intent i) {
-////            XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
-//            i.getIntExtra("position", 0);
-//            downloadButton.setEnabled(true);
-//            Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
-//        }
-//    };
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+    }
+
+    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
+        public void onReceive(Context ctxt, Intent i) {
+            Button selectedButton = (Button)items.getChildAt(i.getIntExtra("selectedItem",0)).findViewById(R.id.item_action);
+//            XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
+            i.getIntExtra("position", 0);
+            selectedButton.setEnabled(true);
+            Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
+        }
+    };
 
 
 }

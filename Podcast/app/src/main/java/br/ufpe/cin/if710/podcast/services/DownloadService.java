@@ -1,7 +1,9 @@
 package br.ufpe.cin.if710.podcast.services;
 
 import android.app.IntentService;
+import android.content.ClipData;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -13,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 
 /**
  * Created by Guilherme on 01/10/2017.
@@ -30,14 +34,18 @@ public class DownloadService extends IntentService {
     @Override
     public void onHandleIntent(Intent i) {
         try {
+            Uri uri = Uri.parse("http://www.artebahia.com/11465-thickbox_default/aplique-ancora-pequena.jpg");
+
             //checar se tem permissao... Android 6.0+
             File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             root.mkdirs();
-            File output = new File(root, i.getData().getLastPathSegment());
+            File output = new File(root, uri.getLastPathSegment());
             if (output.exists()) {
                 output.delete();
             }
-            URL url = new URL(i.getData().toString());
+
+            URL url = new URL(uri.toString());
+//            URL url = new URL("http://www.artebahia.com/11465-thickbox_default/aplique-ancora-pequena.jpg");
             HttpURLConnection c = (HttpURLConnection) url.openConnection();
             FileOutputStream fos = new FileOutputStream(output.getPath());
             BufferedOutputStream out = new BufferedOutputStream(fos);
@@ -55,9 +63,9 @@ public class DownloadService extends IntentService {
                 out.close();
                 c.disconnect();
             }
-
-            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(DOWNLOAD_COMPLETE));
-
+            Intent downloadComplete = new Intent(DOWNLOAD_COMPLETE);
+            downloadComplete.putExtra("selectedItem", i.getIntExtra("selectedItem",0));
+            LocalBroadcastManager.getInstance(this).sendBroadcast(downloadComplete);
 
         } catch (IOException e2) {
             Log.e(getClass().getName(), "Exception durante download", e2);
