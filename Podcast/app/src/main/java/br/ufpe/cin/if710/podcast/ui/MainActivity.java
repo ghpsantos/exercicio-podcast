@@ -78,11 +78,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-//        List<ItemFeed> lif = (List<ItemFeed>)new DownloadXmlTask().execute(RSS_FEED);
+        /*if hasConnection download and save in the database
+         * if not retrieve feed from database
+         */
         if(isConnected(getApplicationContext())){
             new DownloadXmlAndSaveInDatabaseTask().execute(RSS_FEED);
         }else{
-            new DatabaseRetrieveDataTask().execute(RSS_FEED);
+            new DatabaseRetrieveDataTask().execute();
         }
 
     }
@@ -161,7 +163,6 @@ public class MainActivity extends Activity {
                 cv.put(PodcastDBHelper.EPISODE_DATE, itemFeed.getPubDate());
                 cv.put(PodcastDBHelper.EPISODE_DESC, itemFeed.getDescription());
                 cv.put(PodcastDBHelper.EPISODE_DOWNLOAD_LINK, itemFeed.getDownloadLink());
-
                 cr.insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
             }
         }

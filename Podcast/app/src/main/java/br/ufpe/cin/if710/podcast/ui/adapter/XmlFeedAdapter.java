@@ -5,7 +5,9 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
@@ -52,7 +54,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
             convertView = View.inflate(getContext(), linkResource, null);
@@ -63,8 +65,19 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+
+
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
+        //setting On click button.
+        Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
+
+        downloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(),"Clicou no item: " + position, Toast.LENGTH_LONG).show();
+            }
+        });
         return convertView;
     }
 }
