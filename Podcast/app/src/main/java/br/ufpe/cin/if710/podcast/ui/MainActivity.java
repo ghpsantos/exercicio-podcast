@@ -1,15 +1,18 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,6 +39,7 @@ import br.ufpe.cin.if710.podcast.db.PodcastProvider;
 import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
+import br.ufpe.cin.if710.podcast.services.DownloadService;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 
 public class MainActivity extends Activity {
@@ -150,20 +154,33 @@ public class MainActivity extends Activity {
 
             //inserting data in database trough iterator
             Iterator<ItemFeed> ifIterator = feed.iterator();
-
             ContentResolver cr;
             ContentValues cv = new ContentValues();
 
             while(ifIterator.hasNext()){
-                cr = getContentResolver();
                 ItemFeed itemFeed = ifIterator.next();
-                //data
-                cv.put(PodcastDBHelper.EPISODE_TITLE, itemFeed.getTitle());
-                cv.put(PodcastDBHelper.EPISODE_LINK, itemFeed.getLink());
-                cv.put(PodcastDBHelper.EPISODE_DATE, itemFeed.getPubDate());
-                cv.put(PodcastDBHelper.EPISODE_DESC, itemFeed.getDescription());
-                cv.put(PodcastDBHelper.EPISODE_DOWNLOAD_LINK, itemFeed.getDownloadLink());
-                cr.insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+
+                //if not exists in database, create
+                ContentResolver crExists = getContentResolver();
+                String selection = PodcastProviderContract.DESCRIPTION + " =? AND "+ PodcastProviderContract.DATE +" =?";
+                String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
+                Cursor existsItem = crExists.query(PodcastProviderContract.EPISODE_LIST_URI,
+                        PodcastProviderContract.ALL_COLUMNS,
+                        selection,
+                        selectionArgs,
+                        null);
+                int s = existsItem.getCount();
+                if(s==0) {
+                    //data
+                    cr = getContentResolver();
+                    cv.put(PodcastDBHelper.EPISODE_TITLE, itemFeed.getTitle());
+                    cv.put(PodcastDBHelper.EPISODE_LINK, itemFeed.getLink());
+                    cv.put(PodcastDBHelper.EPISODE_DATE, itemFeed.getPubDate());
+                    cv.put(PodcastDBHelper.EPISODE_DESC, itemFeed.getDescription());
+                    cv.put(PodcastDBHelper.EPISODE_DOWNLOAD_LINK, itemFeed.getDownloadLink());
+
+                    cr.insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+                }
             }
         }
     }
@@ -243,4 +260,31 @@ public class MainActivity extends Activity {
         }
         return rssFeed;
     }
+
+
+    //OnButton Click methods listeners for download Button
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
+//        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+//    }
+//
+//    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
+//        public void onReceive(Context ctxt, Intent i) {
+////            XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
+//            i.getIntExtra("position", 0);
+//            downloadButton.setEnabled(true);
+//            Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
+//        }
+//    };
+
+
 }

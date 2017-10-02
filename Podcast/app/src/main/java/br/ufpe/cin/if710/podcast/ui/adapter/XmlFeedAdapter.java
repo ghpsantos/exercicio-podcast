@@ -1,7 +1,13 @@
 package br.ufpe.cin.if710.podcast.ui.adapter;
 
 import java.util.List;
+
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -11,6 +17,7 @@ import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.services.DownloadService;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
@@ -19,6 +26,8 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     public XmlFeedAdapter(Context context, int resource, List<ItemFeed> objects) {
         super(context, resource, objects);
         linkResource = resource;
+//        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
+//        LocalBroadcastManager.getInstance(getContext()).registerReceiver(onDownloadCompleteEvent, f);
     }
 
     /**
@@ -70,14 +79,39 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
         //setting On click button.
-        Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
+        final Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
 
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getContext(),"Clicou no item: " + position, Toast.LENGTH_LONG).show();
+                downloadButton.setEnabled(false);
+                Intent downloadService = new Intent(getContext(),DownloadService.class);
+                downloadService.setData(Uri.parse(getItem(position).getDownloadLink()));
+                getContext().startService(downloadService);
             }
         });
         return convertView;
     }
+
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
+//        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+//    }
+
+//    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
+//        public void onReceive(Context ctxt, Intent i) {
+//            downloadButton.setEnabled(true);
+//            Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
+//        }
+//    };
 }
