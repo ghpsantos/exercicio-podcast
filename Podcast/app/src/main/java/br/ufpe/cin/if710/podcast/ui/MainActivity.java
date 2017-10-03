@@ -283,7 +283,6 @@ public class MainActivity extends Activity {
             Button selectedButton = (Button)items.getChildAt(selectedItem).findViewById(R.id.item_action);
             selectedButton.setEnabled(true);
 
-
             String uri = i.getStringExtra("uri");
 
             ItemFeed itemFeed = (ItemFeed)items.getItemAtPosition(selectedItem);
