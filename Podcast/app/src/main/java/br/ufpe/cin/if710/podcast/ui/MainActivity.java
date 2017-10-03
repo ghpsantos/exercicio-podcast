@@ -50,9 +50,7 @@ public class MainActivity extends Activity {
     //TODO teste com outros links de podcast
 
     private ListView items;
-
-    private XmlFeedAdapter adapter;
-
+    private List<ItemFeed> feed;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,12 +86,11 @@ public class MainActivity extends Activity {
         /*if hasConnection download and save in the database
          * if not retrieve feed from database
          */
+        //TODO ajustar Download e Database retrieve task. ( funcionamento assincrono )
         if(isConnected(getApplicationContext())){
             new DownloadXmlAndSaveInDatabaseTask().execute(RSS_FEED);
         }
-
-        new DatabaseRetrieveDataTask().execute();
-
+            new DatabaseRetrieveDataTask().execute();
 
     }
 
@@ -117,7 +114,7 @@ public class MainActivity extends Activity {
     private class DownloadXmlAndSaveInDatabaseTask extends AsyncTask<String, Void, List<ItemFeed>> {
         @Override
         protected void onPreExecute() {
-            Toast.makeText(getApplicationContext(), "iniciando download...", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "iniciando...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -135,12 +132,12 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
-            Toast.makeText(getApplicationContext(), "verificando episodios se existem episodios novos a salvar...", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
 
-//            //Adapter Personalizado
-//            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
-//
-//            //atualizar o list view
+            //Adapter Personalizado
+            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
+
+            //atualizar o list view
 //            items.setAdapter(adapter);
 //            items.setTextFilterEnabled(true);
 //
@@ -173,8 +170,8 @@ public class MainActivity extends Activity {
                         selection,
                         selectionArgs,
                         null);
-
-                if(existsItem.getCount()==0) {
+                int s = existsItem.getCount();
+                if(s==0) {
                     //data
                     cr = getContentResolver();
                     cv.put(PodcastDBHelper.EPISODE_TITLE, itemFeed.getTitle());
@@ -193,7 +190,7 @@ public class MainActivity extends Activity {
     private class DatabaseRetrieveDataTask extends AsyncTask<String, Void, List<ItemFeed>> {
         @Override
         protected void onPreExecute() {
-            Toast.makeText(getApplicationContext(), "iniciando database retrieve...", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "iniciando offline...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -209,6 +206,7 @@ public class MainActivity extends Activity {
                 String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
                 String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
                 String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
+
                 itemFeeds.add(new ItemFeed(title,link,pubDate,description,downloadLink,uri));
             }
 
@@ -217,10 +215,11 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
-            Toast.makeText(getApplicationContext(), "terminando offline...", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "terminando offline...", Toast.LENGTH_SHORT).show();
 
             //Adapter Personalizado
-            adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
+            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
+            (MainActivity.this).feed = feed;
             //atualizar o list view
             items.setAdapter(adapter);
             items.setTextFilterEnabled(true);
@@ -280,13 +279,17 @@ public class MainActivity extends Activity {
 
     private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
-            Button selectedButton = (Button)items.getChildAt(i.getIntExtra("selectedItem",0)).findViewById(R.id.item_action);
+            int selectedItem = i.getIntExtra("selectedItem",0);
+            Button selectedButton = (Button)items.getChildAt(selectedItem).findViewById(R.id.item_action);
             selectedButton.setEnabled(true);
 
-            ItemFeed itemFeed = (ItemFeed)items.getItemAtPosition(i.getIntExtra("selectedItem",0));
+
+            String uri = i.getStringExtra("uri");
+
+            ItemFeed itemFeed = (ItemFeed)items.getItemAtPosition(selectedItem);
+
             ContentResolver cr = getContentResolver();
             ContentValues cv = new ContentValues();
-            String uri = i.getStringExtra("uri");
 
             cv.put(PodcastDBHelper.EPISODE_FILE_URI, uri);
 
@@ -296,15 +299,12 @@ public class MainActivity extends Activity {
                     cv,
                     selection,
                     selectionArgs);
-            adapter.notifyDataSetChanged();
-            selectedButton.setText("Ouvir");
-            selectedButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                     Toast.makeText(getApplicationContext(), "????", Toast.LENGTH_LONG).show();
-                }
-            });
 
+            itemFeed.setUri(uri);
+            feed.set(selectedItem, itemFeed);
+            ((XmlFeedAdapter)items.getAdapter()).notifyDataSetChanged();
+
+            selectedButton.setText("Ouvir");
         }
     };
 

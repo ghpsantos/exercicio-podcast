@@ -9,7 +9,7 @@ public class ItemFeed implements Serializable{
     private final String pubDate;
     private final String description;
     private final String downloadLink;
-    private final String uri;
+    private String uri;
 
     public ItemFeed(String title, String link, String pubDate, String description, String downloadLink, String uri) {
         this.title = title;
@@ -42,6 +42,10 @@ public class ItemFeed implements Serializable{
 
     public String getUri() {
         return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     @Override
