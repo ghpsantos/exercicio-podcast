@@ -15,19 +15,9 @@ public class PodcastProviderContract {
     public static final String DESCRIPTION = "description";
     public static final String EPISODE_LINK = "link";
     public static final String DOWNLOAD_LINK = "downloadLink";
-
-    public static final String EPISODE_TABLE = "episodes";
-    /*
-         public final static String EPISODE_TITLE = "title";
-    public final static String EPISODE_DATE = "pubDate";
-    public final static String EPISODE_LINK = "link";
-    public final static String EPISODE_DESC = "description";
-    public final static String EPISODE_DOWNLOAD_LINK = "downloadLink";
     public final static String EPISODE_FILE_URI = "downloadUri";
 
-
-     */
-
+    public static final String EPISODE_TABLE = "episodes";
 
     public final static String[] ALL_COLUMNS = {
             _ID, TITLE, DATE, EPISODE_LINK, DESCRIPTION, DOWNLOAD_LINK};

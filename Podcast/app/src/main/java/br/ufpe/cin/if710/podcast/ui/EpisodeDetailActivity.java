@@ -25,11 +25,13 @@ public class EpisodeDetailActivity extends Activity {
         TextView pubDate_tv = findViewById(R.id.pubDate_value);
         TextView description_tv = findViewById(R.id.description_value);
         TextView downloadLink_tv = findViewById(R.id.downloadLink_value);
+        TextView uri_tv = findViewById(R.id.uri_value);
 
         title_tv.setText(itemFeed.getTitle());
         link_tv.setText(itemFeed.getLink());
         pubDate_tv.setText(itemFeed.getPubDate());
         description_tv.setText(itemFeed.getDescription());
         downloadLink_tv.setText(itemFeed.getDownloadLink());
+        uri_tv.setText(itemFeed.getUri());
     }
 }

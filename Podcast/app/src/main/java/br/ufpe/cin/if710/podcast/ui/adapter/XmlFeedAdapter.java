@@ -87,57 +87,15 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                 downloadButton.setEnabled(false);
                 Intent downloadService = new Intent(getContext(),DownloadService.class);
                 String downloadLink = getItem(position).getDownloadLink();
+                //passing the position and uri to downloadService
                 downloadService.setData(Uri.parse(downloadLink));
                 downloadService.putExtra("selectedItem",position);
-                //registering receiver of downloadCompleteEvent
-//                IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
-//                LocalBroadcastManager.getInstance(getContext()).registerReceiver(onDownloadCompleteEvent, f);
-
                 getContext().startService(downloadService);
             }
 
-//            private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
-//
-//                //onReceive unregister the onDownloadCOmpleteEvent and reimplement onClickButton.
-//                public void onReceive(Context ctxt, Intent i) {
-//                    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(onDownloadCompleteEvent);
-//                    downloadButton.setEnabled(true);
-//                    downloadButton.setText("Ouvir");
-//                    Toast.makeText(getContext(), i.getData().toString(), Toast.LENGTH_LONG).show();
-//                    downloadButton.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view) {
-//
-////                            LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(onDownloadCompleteEvent);
-////                            Toast.makeText(getContext(), "????", Toast.LENGTH_LONG).show();
-//                        }
-//                    });
-//                    Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
-//                }
-//            };
+
 
         });
         return convertView;
     }
-
-
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        IntentFilter f = new IntentFilter(DownloadService.DOWNLOAD_COMPLETE);
-//        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
-//    }
-//
-//    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
-//        public void onReceive(Context ctxt, Intent i) {
-//            downloadButton.setEnabled(true);
-//            Toast.makeText(ctxt, "Download finalizado!", Toast.LENGTH_LONG).show();
-//        }
-//    };
 }

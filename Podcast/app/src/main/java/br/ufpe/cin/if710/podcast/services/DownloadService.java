@@ -65,6 +65,8 @@ public class DownloadService extends IntentService {
             }
             Intent downloadComplete = new Intent(DOWNLOAD_COMPLETE);
             downloadComplete.putExtra("selectedItem", i.getIntExtra("selectedItem",0));
+            downloadComplete.putExtra("uri", uri.toString());
+//            downloadComplete.setData(uri);
             LocalBroadcastManager.getInstance(this).sendBroadcast(downloadComplete);
 
         } catch (IOException e2) {
