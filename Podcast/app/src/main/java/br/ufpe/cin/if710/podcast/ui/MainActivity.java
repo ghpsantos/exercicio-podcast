@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
     //TODO teste com outros links de podcast
 
     private ListView items;
-    private List<ItemFeed> feed;
+    private List<ItemFeed> feedToOnCompleteDownload;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -204,7 +204,7 @@ public class MainActivity extends Activity {
                 }
 
 
-                (MainActivity.this).feed = itemFeeds;
+                (MainActivity.this).feedToOnCompleteDownload = itemFeeds;
                 //Adapter Personalizado
                 XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
 
@@ -262,7 +262,7 @@ public class MainActivity extends Activity {
 
             //Adapter Personalizado
             XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
-            (MainActivity.this).feed = feed;
+            (MainActivity.this).feedToOnCompleteDownload = feed;
             //atualizar o list view
             items.setAdapter(adapter);
             items.setTextFilterEnabled(true);
@@ -323,8 +323,16 @@ public class MainActivity extends Activity {
     private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
             int selectedItem = i.getIntExtra("selectedItem",0);
-            Button selectedButton = (Button)items.getChildAt(selectedItem).findViewById(R.id.item_action);
-            selectedButton.setEnabled(true);
+//            Button selectedButton = (Button)items.getChildAt(selectedItem).findViewById(R.id.item_action);
+//            selectedButton.setEnabled(true);
+//            selectedButton.setText("Ouvir");
+//            selectedButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//
+//                    Toast.makeText(getApplicationContext(), "???", Toast.LENGTH_SHORT).show();
+//                }
+//            });
 
             String uri = i.getStringExtra("uri");
 
@@ -335,18 +343,18 @@ public class MainActivity extends Activity {
 
             cv.put(PodcastDBHelper.EPISODE_FILE_URI, uri);
 
-            String selection = PodcastProviderContract.DESCRIPTION + " =? AND "+ PodcastProviderContract.DATE +" =?";
+            String selection = PodcastProviderContract.DESCRIPTION + " = ? AND "+ PodcastProviderContract.DATE +" = ?";
             String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
             int s = cr.update(PodcastProviderContract.EPISODE_LIST_URI,
                     cv,
                     selection,
                     selectionArgs);
 
+            //seta a tela
             itemFeed.setUri(uri);
-            feed.set(selectedItem, itemFeed);
+            feedToOnCompleteDownload.set(selectedItem, itemFeed);
             ((XmlFeedAdapter)items.getAdapter()).notifyDataSetChanged();
 
-            selectedButton.setText("Ouvir");
         }
     };
 

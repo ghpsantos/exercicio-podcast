@@ -58,6 +58,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     static class ViewHolder {
         TextView item_title;
         TextView item_date;
+        Button item_action;
     }
 
     @Override
@@ -68,6 +69,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             holder = new ViewHolder();
             holder.item_title = (TextView) convertView.findViewById(R.id.item_title);
             holder.item_date = (TextView) convertView.findViewById(R.id.item_date);
+            holder.item_action = (Button)convertView.findViewById(R.id.item_action);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -77,22 +79,30 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
         //setting On click button.
-        final Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
+//        final Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
 
-        downloadButton.setOnClickListener(new View.OnClickListener() {
+        if(getItem(position).getUri()!=null){
+            holder.item_action.setText("Ouvir");
+        }
+
+        holder.item_action.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                Toast.makeText(getContext(),"Clicou no item: " + position, Toast.LENGTH_LONG).show();
-                downloadButton.setEnabled(false);
-                Intent downloadService = new Intent(getContext(),DownloadService.class);
-                String downloadLink = getItem(position).getDownloadLink();
-                //passing the position and uri to downloadService
-                downloadService.setData(Uri.parse(downloadLink));
-                downloadService.putExtra("selectedItem",position);
-                getContext().startService(downloadService);
+                if(getItem(position).getUri()==null){
+//                    ((Button)view).setEnabled(false);
+                    Intent downloadService = new Intent(getContext(),DownloadService.class);
+                    String downloadLink = getItem(position).getDownloadLink();
+                    //passing the position and uri to downloadService
+                    downloadService.setData(Uri.parse(downloadLink));
+                    downloadService.putExtra("selectedItem",position);
+                    getContext().startService(downloadService);
+                }else{
+                    ((Button)view).setText("Ouvir");
+//                     Toast.makeText(getContext(),"tem uri0",Toast.LENGTH_SHORT).show();
+                }
+//                Toast.makeText(getContext(),"Clicou no item: " + position, Toast.LENGTH_LONG).show();
             }
-
 
 
         });
