@@ -82,6 +82,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 //        final Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
 
         if(getItem(position).getUri()!=null){
+            holder.item_action.setEnabled(true);
             holder.item_action.setText("Ouvir");
         }
 
@@ -90,7 +91,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             @Override
             public void onClick(View view) {
                 if(getItem(position).getUri()==null){
-//                    ((Button)view).setEnabled(false);
+                    ((Button)view).setEnabled(false);
                     Intent downloadService = new Intent(getContext(),DownloadService.class);
                     String downloadLink = getItem(position).getDownloadLink();
                     //passing the position and uri to downloadService
