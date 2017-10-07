@@ -21,22 +21,21 @@ import br.ufpe.cin.if710.podcast.domain.ItemFeed;
  * Created by Guilherme on 01/10/2017.
  */
 
-public class DownloadService extends IntentService {
+public class EpisodeDownloadService extends IntentService {
 
     public static final String DOWNLOAD_COMPLETE = "br.ufpe.cin.if710.services.action.DOWNLOAD_COMPLETE";
 
 
-    public DownloadService() {
-        super("DownloadService");
+    public EpisodeDownloadService() {
+        super("EpisodeDownloadService");
     }
 
     @Override
     public void onHandleIntent(Intent i) {
-        //TODO set uri for do
         try {
-            Uri uri = i.getData();
+        Uri uri = i.getData();
 
-            //checar se tem permissao... Android 6.0+
+        //checar se tem permissao... Android 6.0+
             File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             root.mkdirs();
             File output = new File(root, uri.getLastPathSegment());
@@ -64,9 +63,9 @@ public class DownloadService extends IntentService {
             }
 
         Intent downloadComplete = new Intent(DOWNLOAD_COMPLETE);
-            downloadComplete.putExtra("uri",uri.toString());
-            downloadComplete.putExtra("selectedItem", i.getIntExtra("selectedItem",0));
-            LocalBroadcastManager.getInstance(this).sendBroadcast(downloadComplete);
+        downloadComplete.putExtra("uri", output.toString());
+        downloadComplete.putExtra("selectedItem", i.getIntExtra("selectedItem", 0));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(downloadComplete);
 
         } catch (IOException e2) {
             Log.e(getClass().getName(), "Exception durante download", e2);

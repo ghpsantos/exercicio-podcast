@@ -51,8 +51,8 @@ episódio, atualizações em segundo plano, notificações de novos episódios, 
 | 6 | **Sim** |
 | 7 | **Sim** |
 | 8 | **Sim** |
-| 9 | **não** |
-| 10 | **não** |
+| 9 | **Sim** |
+| 10 | **Sim** |
 | 11 | **não** |
 | 12 | **não** |
 | 13 | **não** |

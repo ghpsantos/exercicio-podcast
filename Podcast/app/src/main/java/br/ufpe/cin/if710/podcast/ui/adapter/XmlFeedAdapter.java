@@ -2,22 +2,18 @@ package br.ufpe.cin.if710.podcast.ui.adapter;
 
 import java.util.List;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
-import br.ufpe.cin.if710.podcast.services.DownloadService;
+import br.ufpe.cin.if710.podcast.services.EpisodeDownloadService;
 import br.ufpe.cin.if710.podcast.services.MusicPlayerService;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
@@ -85,6 +81,9 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         if(getItem(position).getUri()!=null){
             holder.item_action.setEnabled(true);
             holder.item_action.setText("Ouvir");
+        }else{
+            //https://stackoverflow.com/questions/41256172/changing-one-item-only-in-a-listview-or-recycleview
+            holder.item_action.setText("Download");
         }
 
         holder.item_action.setOnClickListener(new View.OnClickListener() {
@@ -93,7 +92,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
             public void onClick(View view) {
                 if(getItem(position).getUri()==null){
                     ((Button)view).setEnabled(false);
-                    Intent downloadService = new Intent(getContext(),DownloadService.class);
+                    Intent downloadService = new Intent(getContext(),EpisodeDownloadService.class);
                     String downloadLink = getItem(position).getDownloadLink();
                     //passing the position and uri to downloadService
                     downloadService.setData(Uri.parse(downloadLink));
@@ -104,7 +103,6 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     musicIntent.setData(Uri.parse(getItem(position).getUri()));
                     getContext().startService(musicIntent);
                 }
-//                Toast.makeText(getContext(),"Clicou no item: " + position, Toast.LENGTH_LONG).show();
             }
 
 
