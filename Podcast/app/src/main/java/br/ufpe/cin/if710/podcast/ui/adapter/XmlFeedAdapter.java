@@ -18,6 +18,7 @@ import android.widget.Toast;
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.services.DownloadService;
+import br.ufpe.cin.if710.podcast.services.MusicPlayerService;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
@@ -99,8 +100,9 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     downloadService.putExtra("selectedItem",position);
                     getContext().startService(downloadService);
                 }else{
-                    ((Button)view).setText("Ouvir");
-//                     Toast.makeText(getContext(),"tem uri0",Toast.LENGTH_SHORT).show();
+                    Intent musicIntent = new Intent(getContext(),MusicPlayerService.class);
+                    musicIntent.setData(Uri.parse(getItem(position).getUri()));
+                    getContext().startService(musicIntent);
                 }
 //                Toast.makeText(getContext(),"Clicou no item: " + position, Toast.LENGTH_LONG).show();
             }

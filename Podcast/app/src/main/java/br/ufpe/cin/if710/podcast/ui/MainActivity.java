@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
 
     private ListView items;
     private List<ItemFeed> feedToOnCompleteDownload;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +75,7 @@ public class MainActivity extends Activity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this,SettingsActivity.class));
+            startActivity(new Intent(this, SettingsActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -83,15 +84,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        /*if hasConnection download and save in the database
-         * if not retrieve feed from database
-         */
-        //TODO ajustar Download e Database retrieve task. ( funcionamento assincrono )
-//        if(isConnected(getApplicationContext())){
-            new DownloadXmlAndSaveInDatabaseTask().execute(RSS_FEED);
-//        }else {
-//            new DatabaseRetrieveDataTask().execute();
-//        }
+        new DownloadXmlAndSaveInDatabaseTask().execute(RSS_FEED);
     }
 
     //auxiliary method to verify connectivity
@@ -132,41 +125,17 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
-//            Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
-
-
-//            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
-
-            //atualizar o list view
-//            items.setAdapter(adapter);
-//            items.setTextFilterEnabled(true);
-//
-//            items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
-//                    ItemFeed item = adapter.getItem(position);
-//                    //passing an intent with the clicked item to EpisodeDetail Activity
-//                    Intent i = new Intent(getApplicationContext(),EpisodeDetailActivity.class);
-//                    i.putExtra("clickedItem", item);
-//                    startActivity(i);
-//                }
-//            });
-
-
-
-        //TODO comportamento estranho na primeira execução...
             //inserting data in database trough iterator
             Iterator<ItemFeed> ifIterator = feed.iterator();
             ContentResolver cr;
             ContentValues cv = new ContentValues();
 
-            while(ifIterator.hasNext()){
+            while (ifIterator.hasNext()) {
                 ItemFeed itemFeed = ifIterator.next();
 
                 //if not exists in database, create
                 ContentResolver crExists = getContentResolver();
-                String selection = PodcastProviderContract.DESCRIPTION + " =? AND "+ PodcastProviderContract.DATE +" =?";
+                String selection = PodcastProviderContract.DESCRIPTION + " =? AND " + PodcastProviderContract.DATE + " =?";
                 String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
                 Cursor existsItem = crExists.query(PodcastProviderContract.EPISODE_LIST_URI,
                         PodcastProviderContract.ALL_COLUMNS,
@@ -174,7 +143,7 @@ public class MainActivity extends Activity {
                         selectionArgs,
                         null);
                 int s = existsItem.getCount();
-                if(s==0) {
+                if (s == 0) {
                     //data
                     cr = getContentResolver();
                     cv.put(PodcastDBHelper.EPISODE_TITLE, itemFeed.getTitle());
@@ -189,10 +158,10 @@ public class MainActivity extends Activity {
 
                 // retrieving from database and setting view
                 cr = getContentResolver();
-                Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
+                Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI, null, null, null, null);
 
                 ArrayList<ItemFeed> itemFeeds = new ArrayList<>();
-                while(c.moveToNext()){
+                while (c.moveToNext()) {
                     String title = c.getString(c.getColumnIndex(PodcastProviderContract.TITLE));
                     String link = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
                     String pubDate = c.getString(c.getColumnIndex(PodcastProviderContract.DATE));
@@ -200,7 +169,7 @@ public class MainActivity extends Activity {
                     String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
                     String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
 
-                    itemFeeds.add(new ItemFeed(title,link,pubDate,description,downloadLink,uri));
+                    itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri));
                 }
 
 
@@ -217,7 +186,7 @@ public class MainActivity extends Activity {
                         XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
                         ItemFeed item = adapter.getItem(position);
                         //passing an intent with the clicked item to EpisodeDetail Activity
-                        Intent i = new Intent(getApplicationContext(),EpisodeDetailActivity.class);
+                        Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
                         i.putExtra("clickedItem", item);
                         startActivity(i);
                     }
@@ -236,10 +205,10 @@ public class MainActivity extends Activity {
         @Override
         protected List<ItemFeed> doInBackground(String... params) {
             ContentResolver cr = getContentResolver();
-            Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI,null,null,null,null);
+            Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI, null, null, null, null);
 
             ArrayList<ItemFeed> itemFeeds = new ArrayList<>();
-            while(c.moveToNext()){
+            while (c.moveToNext()) {
                 String title = c.getString(c.getColumnIndex(PodcastProviderContract.TITLE));
                 String link = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
                 String pubDate = c.getString(c.getColumnIndex(PodcastProviderContract.DATE));
@@ -247,10 +216,8 @@ public class MainActivity extends Activity {
                 String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
                 String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
 
-                itemFeeds.add(new ItemFeed(title,link,pubDate,description,downloadLink,uri));
+                itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri));
             }
-
-
 
 
             return itemFeeds;
@@ -272,7 +239,7 @@ public class MainActivity extends Activity {
                     XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
                     ItemFeed item = adapter.getItem(position);
                     //passing an intent with the clicked item to EpisodeDetail Activity
-                    Intent i = new Intent(getApplicationContext(),EpisodeDetailActivity.class);
+                    Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
                     i.putExtra("clickedItem", item);
                     startActivity(i);
                 }
@@ -320,30 +287,19 @@ public class MainActivity extends Activity {
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
     }
 
-    private BroadcastReceiver onDownloadCompleteEvent=new BroadcastReceiver() {
+    private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
-            int selectedItem = i.getIntExtra("selectedItem",0);
-//            Button selectedButton = (Button)items.getChildAt(selectedItem).findViewById(R.id.item_action);
-//            selectedButton.setEnabled(true);
-//            selectedButton.setText("Ouvir");
-//            selectedButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//
-//                    Toast.makeText(getApplicationContext(), "???", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-
+            int selectedItem = i.getIntExtra("selectedItem", 0);
             String uri = i.getStringExtra("uri");
 
-            ItemFeed itemFeed = (ItemFeed)items.getItemAtPosition(selectedItem);
+            ItemFeed itemFeed = (ItemFeed) items.getItemAtPosition(selectedItem);
 
             ContentResolver cr = getContentResolver();
             ContentValues cv = new ContentValues();
 
             cv.put(PodcastDBHelper.EPISODE_FILE_URI, uri);
 
-            String selection = PodcastProviderContract.DESCRIPTION + " = ? AND "+ PodcastProviderContract.DATE +" = ?";
+            String selection = PodcastProviderContract.DESCRIPTION + " = ? AND " + PodcastProviderContract.DATE + " = ?";
             String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
             int s = cr.update(PodcastProviderContract.EPISODE_LIST_URI,
                     cv,
@@ -353,10 +309,9 @@ public class MainActivity extends Activity {
             //seta a tela
             itemFeed.setUri(uri);
             feedToOnCompleteDownload.set(selectedItem, itemFeed);
-            ((XmlFeedAdapter)items.getAdapter()).notifyDataSetChanged();
+            ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
 
         }
     };
-
 
 }
