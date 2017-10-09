@@ -18,7 +18,7 @@ public class EpisodeDetailActivity extends Activity {
         setContentView(R.layout.activity_episode_detail);
         Intent i = getIntent();
         ItemFeed itemFeed = (ItemFeed)i.getSerializableExtra("clickedItem");
-        Toast.makeText(getApplicationContext(), "name: " + itemFeed.getTitle() + "link: " + itemFeed.getLink(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getApplicationContext(), "name: " + itemFeed.getTitle() + "link: " + itemFeed.getLink(), Toast.LENGTH_SHORT).show();
         //setting field's values previous defined in activity_episode_detail
         TextView title_tv = findViewById(R.id.title_value);
         TextView link_tv = findViewById(R.id.link_value);

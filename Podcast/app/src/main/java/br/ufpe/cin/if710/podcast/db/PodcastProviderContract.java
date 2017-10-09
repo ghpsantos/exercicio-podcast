@@ -16,11 +16,13 @@ public class PodcastProviderContract {
     public static final String EPISODE_LINK = "link";
     public static final String DOWNLOAD_LINK = "downloadLink";
     public final static String EPISODE_FILE_URI = "downloadUri";
+    public final static String CURRENT_POSITION = "currentPosition";
 
     public static final String EPISODE_TABLE = "episodes";
 
     public final static String[] ALL_COLUMNS = {
-            _ID, TITLE, DATE, EPISODE_LINK, DESCRIPTION, DOWNLOAD_LINK};
+            _ID, TITLE, DATE, EPISODE_LINK, DESCRIPTION, DOWNLOAD_LINK,
+            CURRENT_POSITION};
 
     private static final Uri BASE_LIST_URI = Uri.parse("content://br.ufpe.cin.if710.podcast.feed/");
     //URI para tabela

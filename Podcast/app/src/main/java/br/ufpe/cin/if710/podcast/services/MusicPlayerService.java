@@ -1,16 +1,27 @@
 package br.ufpe.cin.if710.podcast.services;
 
 import android.app.Service;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import java.io.IOException;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.db.PodcastDBHelper;
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
+import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
+
+import static br.ufpe.cin.if710.podcast.R.id.items;
 
 public class MusicPlayerService extends Service {
     private final String TAG = "MusicPlayerNoBindingService";
+    public static final String MUSIC_PAUSED = "br.ufpe.cin.if710.services.action.MUSIC_PAUSED";
 
     private MediaPlayer mPlayer;
     private int mStartID;
@@ -20,7 +31,6 @@ public class MusicPlayerService extends Service {
         super.onCreate();
 
 //         configurar media player
-//        Nine Inch Nails Ghosts I-IV is licensed under a Creative Commons Attribution Non-Commercial Share Alike license.
         mPlayer = new MediaPlayer();
 
         //nao deixa entrar em loop
@@ -49,16 +59,24 @@ public class MusicPlayerService extends Service {
             /**/
             //se ja esta tocando...
             if (mPlayer.isPlaying()) {
+                int currentPosition = mPlayer.getCurrentPosition();
                 mPlayer.reset();
+                Intent musicPaused = new Intent(MUSIC_PAUSED);
+                musicPaused.putExtra("selectedPosition", intent.getIntExtra("selectedPosition",0));
+                musicPaused.putExtra("currentPosition", currentPosition);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(musicPaused);
             } else {
                 try {
                     mPlayer.setDataSource(this, intent.getData());
                     mPlayer.prepare();
+                    int currentPosition = intent.getIntExtra("currentPosition",0);
+                    mPlayer.seekTo(currentPosition);
+                    mPlayer.start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 // inicia musica
-                mPlayer.start();
+
             }
         }
         // nao reinicia service automaticamente se for eliminado

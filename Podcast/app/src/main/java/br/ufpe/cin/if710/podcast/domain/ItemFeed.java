@@ -10,14 +10,16 @@ public class ItemFeed implements Serializable{
     private final String description;
     private final String downloadLink;
     private String uri;
+    private Integer currentPosition;
 
-    public ItemFeed(String title, String link, String pubDate, String description, String downloadLink, String uri) {
+    public ItemFeed(String title, String link, String pubDate, String description, String downloadLink, String uri, Integer currentPosition) {
         this.title = title;
         this.link = link;
         this.pubDate = pubDate;
         this.description = description;
         this.downloadLink = downloadLink;
         this.uri = uri;
+        this.currentPosition = currentPosition;
     }
 
     public String getTitle() {
@@ -46,6 +48,14 @@ public class ItemFeed implements Serializable{
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public Integer getCurrentPosition() {
+        return currentPosition;
+    }
+
+    public void setCurrentPosition(Integer currentPosition) {
+        this.currentPosition = currentPosition;
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -42,6 +43,7 @@ import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
 import br.ufpe.cin.if710.podcast.services.DownloadAndPersistXmlService;
 import br.ufpe.cin.if710.podcast.services.EpisodeDownloadService;
+import br.ufpe.cin.if710.podcast.services.MusicPlayerService;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 
 public class MainActivity extends Activity {
@@ -60,8 +62,9 @@ public class MainActivity extends Activity {
         items = (ListView) findViewById(R.id.items);
 
         IntentFilter f_d = new IntentFilter(DownloadAndPersistXmlService.DOWNLOAD_AND_PERSIST_XML_COMPLETE);
+        IntentFilter f_m = new IntentFilter(MusicPlayerService.MUSIC_PAUSED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadAndPersistCompleteEvent, f_d);
-
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicPaused, f_m);
     }
 
     @Override
@@ -98,7 +101,6 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         XmlFeedAdapter adapter = (XmlFeedAdapter) items.getAdapter();
-//       mexendo
         if (adapter != null) {
             adapter.clear();
         }
@@ -146,6 +148,7 @@ public class MainActivity extends Activity {
     protected void onDestroy(){
         super.onDestroy();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadAndPersistCompleteEvent);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onMusicPaused);
     }
 
     private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
@@ -192,8 +195,8 @@ public class MainActivity extends Activity {
                     String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
                     String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
                     String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
-
-                    itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri));
+                    Integer currentPosition = c.getInt(c.getColumnIndex(PodcastProviderContract.CURRENT_POSITION));
+                    itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri, currentPosition));
                 }
 
 //            ((MainActivity.this).feedToOnCompleteDownload) = itemFeeds;
@@ -235,5 +238,34 @@ public class MainActivity extends Activity {
 //
         }
     };
+
+    private BroadcastReceiver onMusicPaused = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int currentPosition = intent.getIntExtra("currentPosition", 0);
+            int selectedPosition = intent.getIntExtra("selectedPosition",0);
+            ItemFeed itemFeed = (ItemFeed)items.getItemAtPosition(selectedPosition);
+
+            ContentResolver cr = getContentResolver();
+            ContentValues cv = new ContentValues();
+
+            cv.put(PodcastDBHelper.CURRENT_POSITION, currentPosition);
+
+            String selection = PodcastProviderContract.DESCRIPTION + " = ? AND " + PodcastProviderContract.DATE + " = ?";
+            String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
+            cr.update(PodcastProviderContract.EPISODE_LIST_URI,
+                    cv,
+                    selection,
+                    selectionArgs);
+            //seta a tela
+            itemFeed.setCurrentPosition(currentPosition);
+
+            ((XmlFeedAdapter)items.getAdapter()).notifyDataSetChanged();
+        }
+    };
 }
+
+
+
 

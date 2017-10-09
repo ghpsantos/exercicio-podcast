@@ -101,6 +101,8 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                 }else{
                     Intent musicIntent = new Intent(getContext(),MusicPlayerService.class);
                     musicIntent.setData(Uri.parse(getItem(position).getUri()));
+                    musicIntent.putExtra("selectedPosition",position);
+                    musicIntent.putExtra("currentPosition", getItem(position).getCurrentPosition());
                     getContext().startService(musicIntent);
                 }
             }
