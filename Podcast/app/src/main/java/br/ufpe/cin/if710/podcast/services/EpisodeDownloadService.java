@@ -33,9 +33,9 @@ public class EpisodeDownloadService extends IntentService {
     @Override
     public void onHandleIntent(Intent i) {
         try {
-        Uri uri = i.getData();
+            Uri uri = i.getData();
 
-        //checar se tem permissao... Android 6.0+
+            //checar se tem permissao... Android 6.0+
             File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             root.mkdirs();
             File output = new File(root, uri.getLastPathSegment());
@@ -55,17 +55,16 @@ public class EpisodeDownloadService extends IntentService {
                     out.write(buffer, 0, len);
                 }
                 out.flush();
-            }
-            finally {
+            } finally {
                 fos.getFD().sync();
                 out.close();
                 c.disconnect();
             }
 
-        Intent downloadComplete = new Intent(DOWNLOAD_COMPLETE);
-        downloadComplete.putExtra("uri", output.toString());
-        downloadComplete.putExtra("selectedItem", i.getIntExtra("selectedItem", 0));
-        LocalBroadcastManager.getInstance(this).sendBroadcast(downloadComplete);
+            Intent downloadComplete = new Intent(DOWNLOAD_COMPLETE);
+            downloadComplete.putExtra("uri", output.toString());
+            downloadComplete.putExtra("selectedItem", i.getIntExtra("selectedItem", 0));
+            LocalBroadcastManager.getInstance(this).sendBroadcast(downloadComplete);
 
         } catch (IOException e2) {
             Log.e(getClass().getName(), "Exception durante download", e2);

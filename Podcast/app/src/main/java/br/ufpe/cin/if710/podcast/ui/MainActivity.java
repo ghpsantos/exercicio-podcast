@@ -1,6 +1,10 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -10,6 +14,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +22,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -51,11 +57,11 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        items = (ListView) findViewById(R.id.items);
 
         IntentFilter f_d = new IntentFilter(DownloadAndPersistXmlService.DOWNLOAD_AND_PERSIST_XML_COMPLETE);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadAndPersistCompleteEvent, f_d);
 
-        items = (ListView) findViewById(R.id.items);
     }
 
     @Override
@@ -83,8 +89,8 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
-        Intent downloadAndPersistXmlService = new Intent(this,DownloadAndPersistXmlService.class);
-        downloadAndPersistXmlService.putExtra("rss",RSS_FEED);
+        Intent downloadAndPersistXmlService = new Intent(this, DownloadAndPersistXmlService.class);
+        downloadAndPersistXmlService.putExtra("rss", RSS_FEED);
         startService(downloadAndPersistXmlService);
     }
 
@@ -92,8 +98,12 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         XmlFeedAdapter adapter = (XmlFeedAdapter) items.getAdapter();
-        adapter.clear();
+//       mexendo
+        if (adapter != null) {
+            adapter.clear();
+        }
     }
+
 
     //TODO Opcional - pesquise outros meios de obter arquivos da internet
     private String getRssFeed(String feed) throws IOException {
@@ -130,7 +140,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadAndPersistCompleteEvent);
     }
 
     private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
@@ -162,40 +177,63 @@ public class MainActivity extends Activity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            // retrieving from database and setting view
-            ContentResolver cr = getContentResolver();
-            Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI, null, null, null, null);
 
-            ArrayList<ItemFeed> itemFeeds = new ArrayList<>();
-            while (c.moveToNext()) {
-                String title = c.getString(c.getColumnIndex(PodcastProviderContract.TITLE));
-                String link = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
-                String pubDate = c.getString(c.getColumnIndex(PodcastProviderContract.DATE));
-                String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
-                String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
-                String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
+            //activity running
+            if (MainActivity.this.getWindow().getDecorView().getRootView().isShown()) {
+                // retrieving from database and setting view
+                ContentResolver cr = getContentResolver();
+                Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI, null, null, null, null);
 
-                itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri));
-            }
+                ArrayList<ItemFeed> itemFeeds = new ArrayList<>();
+                while (c.moveToNext()) {
+                    String title = c.getString(c.getColumnIndex(PodcastProviderContract.TITLE));
+                    String link = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
+                    String pubDate = c.getString(c.getColumnIndex(PodcastProviderContract.DATE));
+                    String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
+                    String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
+                    String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
+
+                    itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri));
+                }
 
 //            ((MainActivity.this).feedToOnCompleteDownload) = itemFeeds;
-            //Adapter Personalizado
-            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
+                //Adapter Personalizado
+                XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
 
-            //atualizar o list view
-            items.setAdapter(adapter);
-            items.setTextFilterEnabled(true);
-            items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
-                    ItemFeed item = adapter.getItem(position);
-                    //passing an intent with the clicked item to EpisodeDetail Activity
-                    Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
-                    i.putExtra("clickedItem", item);
-                    startActivity(i);
-                }
-            });
+                //atualizar o list view
+                items.setAdapter(adapter);
+                items.setTextFilterEnabled(true);
+                items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
+                        ItemFeed item = adapter.getItem(position);
+                        //passing an intent with the clicked item to EpisodeDetail Activity
+                        Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
+                        i.putExtra("clickedItem", item);
+                        startActivity(i);
+                    }
+                });
+            } else {
+                //foreground
+                final Intent notificationIntent = new Intent(context, MainActivity.class);
+                final PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+
+                final Notification notification = new Notification.Builder(
+                        getApplicationContext())
+                        .setSmallIcon(android.R.drawable.alert_dark_frame)
+                        .setAutoCancel(true)
+                        .setOngoing(true).setContentTitle("Lista de Podcasts Atualizados")
+                        .setContentText("Clique para acessar o aplicativo de podcast")
+                        .setContentIntent(pendingIntent)
+                        .build();
+
+                final int NOTIFICATION_ID = 2;
+                NotificationManager notificationManager = (NotificationManager)getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
+                notificationManager.notify(NOTIFICATION_ID, notification);
+            }
+//
         }
     };
 }
+
