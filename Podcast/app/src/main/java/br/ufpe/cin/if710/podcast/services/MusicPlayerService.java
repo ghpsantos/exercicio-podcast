@@ -1,23 +1,12 @@
 package br.ufpe.cin.if710.podcast.services;
 
 import android.app.Service;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-
 import java.io.IOException;
 
-import br.ufpe.cin.if710.podcast.R;
-import br.ufpe.cin.if710.podcast.db.PodcastDBHelper;
-import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
-import br.ufpe.cin.if710.podcast.domain.ItemFeed;
-import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
-
-import static br.ufpe.cin.if710.podcast.R.id.items;
 
 public class MusicPlayerService extends Service {
     private final String TAG = "MusicPlayerNoBindingService";

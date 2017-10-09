@@ -1,5 +1,6 @@
 package br.ufpe.cin.if710.podcast.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -12,20 +13,22 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,14 +36,11 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.db.PodcastDBHelper;
 import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
-import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
 import br.ufpe.cin.if710.podcast.services.DownloadAndPersistXmlService;
 import br.ufpe.cin.if710.podcast.services.EpisodeDownloadService;
 import br.ufpe.cin.if710.podcast.services.MusicPlayerService;
@@ -55,6 +55,7 @@ public class MainActivity extends Activity {
     private ListView items;
 //    private List<ItemFeed> feedToOnCompleteDownload;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +66,10 @@ public class MainActivity extends Activity {
         IntentFilter f_m = new IntentFilter(MusicPlayerService.MUSIC_PAUSED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadAndPersistCompleteEvent, f_d);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicPaused, f_m);
+
+        if (!podeEscrever()) {
+            requestPermissions(STORAGE_PERMISSIONS, WRITE_EXTERNAL_STORAGE_REQUEST);
+        }
     }
 
     @Override
@@ -130,7 +135,6 @@ public class MainActivity extends Activity {
         return rssFeed;
     }
 
-    //OnButton Click methods listeners for download Button
 
     @Override
     protected void onResume() {
@@ -149,6 +153,29 @@ public class MainActivity extends Activity {
         super.onDestroy();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadAndPersistCompleteEvent);
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onMusicPaused);
+    }
+
+    //requests
+    private static final int WRITE_EXTERNAL_STORAGE_REQUEST = 710;
+
+    private static final String[] STORAGE_PERMISSIONS = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch(requestCode) {
+            case WRITE_EXTERNAL_STORAGE_REQUEST:
+                if (!podeEscrever()) {
+                    Toast.makeText(this, "Sem permissão para escrita", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                break;
+        }
+    }
+
+    public boolean podeEscrever() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
