@@ -36,16 +36,16 @@ public class MusicPlayerService extends Service {
         //nao deixa entrar em loop
         mPlayer.setLooping(false);
 
-        // encerrar o service quando terminar a musica
+        // executa o release do player quando terminar a musica
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
                 // encerra se foi iniciado com o mesmo ID
-                stopSelf(mStartID);
+//                stopSelf(mStartID);
+                mPlayer.release();
             }
         });
-
 
     }
 

@@ -60,7 +60,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        final ViewHolder holder;
         if (convertView == null) {
             convertView = View.inflate(getContext(), linkResource, null);
             holder = new ViewHolder();
@@ -104,6 +104,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     musicIntent.putExtra("selectedPosition",position);
                     musicIntent.putExtra("currentPosition", getItem(position).getCurrentPosition());
                     getContext().startService(musicIntent);
+                    holder.item_action.setText("Pausar");
                 }
             }
 
