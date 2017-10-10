@@ -11,4 +11,13 @@
         android:title="@string/pref_desc"
         android:defaultValue="@string/feed_link" />
 
+    <EditTextPreference
+        android:dialogTitle="Mudar tempo de carregamento"
+        android:dialogMessage="Digite o novo tempo de carregamento"
+        android:key="timeToLoad"
+        android:negativeButtonText="@string/cancel"
+        android:positiveButtonText="Modificar"
+        android:title="Tempo de Carregamento"
+        android:defaultValue="200" />
+
 </PreferenceScreen>
