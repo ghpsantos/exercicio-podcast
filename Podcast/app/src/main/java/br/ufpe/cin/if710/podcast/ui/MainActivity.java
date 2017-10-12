@@ -32,6 +32,7 @@ import android.widget.Toast;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -65,8 +66,12 @@ public class MainActivity extends Activity {
 
         IntentFilter f_d = new IntentFilter(DownloadAndPersistXmlService.DOWNLOAD_AND_PERSIST_XML_COMPLETE);
         IntentFilter f_m = new IntentFilter(MusicPlayerService.MUSIC_PAUSED);
+        IntentFilter f_e = new IntentFilter(MusicPlayerService.MUSIC_ENDED);
+
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadAndPersistCompleteEvent, f_d);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicPaused, f_m);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicEnded, f_e);
+
 
         if (!podeEscrever()) {
             requestPermissions(STORAGE_PERMISSIONS, WRITE_EXTERNAL_STORAGE_REQUEST);
@@ -126,10 +131,11 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadAndPersistCompleteEvent);
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onMusicPaused);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onMusicEnded);
     }
 
     //requests
@@ -141,7 +147,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch(requestCode) {
+        switch (requestCode) {
             case WRITE_EXTERNAL_STORAGE_REQUEST:
                 if (!podeEscrever()) {
                     Toast.makeText(this, "Sem permissão para escrita", Toast.LENGTH_SHORT).show();
@@ -236,7 +242,7 @@ public class MainActivity extends Activity {
                         .build();
 
                 final int NOTIFICATION_ID = 2;
-                NotificationManager notificationManager = (NotificationManager)getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
+                NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
                 notificationManager.notify(NOTIFICATION_ID, notification);
             }
 //
@@ -248,8 +254,8 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int currentPosition = intent.getIntExtra("currentPosition", 0);
-            int selectedPosition = intent.getIntExtra("selectedPosition",0);
-            ItemFeed itemFeed = (ItemFeed)items.getItemAtPosition(selectedPosition);
+            int selectedPosition = intent.getIntExtra("selectedPosition", 0);
+            ItemFeed itemFeed = (ItemFeed) items.getItemAtPosition(selectedPosition);
 
             ContentResolver cr = getContentResolver();
             ContentValues cv = new ContentValues();
@@ -265,11 +271,39 @@ public class MainActivity extends Activity {
             //seta a tela
             itemFeed.setCurrentPosition(currentPosition);
 
-            ((XmlFeedAdapter)items.getAdapter()).notifyDataSetChanged();
+            ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
+        }
+    };
+
+    private BroadcastReceiver onMusicEnded = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int endedItemPosition = intent.getIntExtra("itemPlaying", 0);
+            Toast.makeText(context, "ACABOU " + intent.getIntExtra("itemPlaying", 0), Toast.LENGTH_SHORT).show();
+
+            ItemFeed endedItem = (ItemFeed) items.getItemAtPosition(endedItemPosition);
+            File file = new File(endedItem.getUri());
+            boolean deleted = file.delete();
+            if (deleted) {
+                ContentResolver cr = getContentResolver();
+                ContentValues cv = new ContentValues();
+
+                cv.put(PodcastDBHelper.EPISODE_FILE_URI, (String) null);
+
+                String selection = PodcastProviderContract.DESCRIPTION + " = ? AND " + PodcastProviderContract.DATE + " = ?";
+                String[] selectionArgs = new String[]{endedItem.getDescription(), endedItem.getPubDate()};
+                cr.update(PodcastProviderContract.EPISODE_LIST_URI,
+                        cv,
+                        selection,
+                        selectionArgs);
+                //seta a tela
+                endedItem.setUri(null);
+
+                ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
+            } else {
+                Toast.makeText(context, "Arquivo não deletado " + intent.getIntExtra("itemPlaying", 0), Toast.LENGTH_SHORT).show();
+            }
         }
     };
 }
-
-
-
-

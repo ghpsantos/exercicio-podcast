@@ -5,15 +5,20 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+
 import java.io.IOException;
+
+import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 
 
 public class MusicPlayerService extends Service {
     private final String TAG = "MusicPlayerNoBindingService";
     public static final String MUSIC_PAUSED = "br.ufpe.cin.if710.services.action.MUSIC_PAUSED";
+    public static final String MUSIC_ENDED = "br.ufpe.cin.if710.services.action.MUSIC_ENDED";
 
     private MediaPlayer mPlayer;
-    private int mStartID;
+    private int itemPlaying;
 
     @Override
     public void onCreate() {
@@ -30,10 +35,11 @@ public class MusicPlayerService extends Service {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                // encerra se foi iniciado com o mesmo ID
-//                stopSelf(mStartID);
-                //TODO INIT A SERVICE THAT DELETE THE PODCAST
-                mPlayer.release();
+                Intent musicEnded = new Intent(MUSIC_ENDED);
+                musicEnded.putExtra("itemPlaying", itemPlaying);
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(musicEnded);
+                //reseting media Player
+                mPlayer = new MediaPlayer();
             }
         });
 
@@ -43,11 +49,6 @@ public class MusicPlayerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         if (null != mPlayer) {
-            // ID para o comando de start especifico
-            mStartID = startId;
-
-            /**/
-            //se ja esta tocando...
             if (mPlayer.isPlaying()) {
                 int currentPosition = mPlayer.getCurrentPosition();
                 mPlayer.reset();
@@ -59,7 +60,10 @@ public class MusicPlayerService extends Service {
                 try {
                     mPlayer.setDataSource(this, intent.getData());
                     mPlayer.prepare();
+//                    Podcast Position
                     int currentPosition = intent.getIntExtra("currentPosition",0);
+//                    itemPlaying >-
+                    itemPlaying =  intent.getIntExtra("selectedPosition",0);
                     mPlayer.seekTo(currentPosition);
                     mPlayer.start();
                 } catch (IOException e) {

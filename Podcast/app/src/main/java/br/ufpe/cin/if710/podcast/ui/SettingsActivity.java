@@ -116,7 +116,6 @@ public class SettingsActivity extends Activity {
 
             //define intervalo de periodicidade
             long timeInMillis = TimeUnit.MINUTES.toMillis(Long.parseLong(prefs.getString(TIME_TO_LOAD, "3000")));
-            Toast.makeText(getContext(), "" + timeInMillis, Toast.LENGTH_SHORT).show();
             b.setPeriodic(timeInMillis);
 
             //exige (ou nao) que esteja conectado ao carregador
@@ -131,7 +130,7 @@ public class SettingsActivity extends Activity {
 
             jobScheduler.schedule(b.build());
 
-            Toast.makeText(getContext(), "Job Service Agendado ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Job Service Agendado", Toast.LENGTH_SHORT).show();
         }
 
         private void cancelarJobs() {
