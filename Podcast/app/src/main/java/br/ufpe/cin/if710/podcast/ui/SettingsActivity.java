@@ -36,9 +36,12 @@ public class SettingsActivity extends Activity {
 
     public static class FeedPreferenceFragment extends PreferenceFragment {
 
+        protected static final String TAG = "FeedPreferenceFragment";
+        private SharedPreferences.OnSharedPreferenceChangeListener mListener;
+        private Preference feedLinkPref;
+        private JobScheduler jobScheduler;
         private Preference timeToLoadPref;
 
-        //        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -95,13 +98,6 @@ public class SettingsActivity extends Activity {
 
         }
 
-        protected static final String TAG = "FeedPreferenceFragment";
-        private SharedPreferences.OnSharedPreferenceChangeListener mListener;
-        private Preference feedLinkPref;
-
-
-        JobScheduler jobScheduler;
-
         private void agendarJob() {
 
             JobInfo.Builder b = new JobInfo.Builder(JOB_ID, new ComponentName(getContext(), DownloadAndPersistJob.class));
@@ -130,6 +126,7 @@ public class SettingsActivity extends Activity {
 
             jobScheduler.schedule(b.build());
 
+            //to setando 15 minutos mas por algum motivo ele tá executando instantaneamente(mas ainda fica registrado, verifiquei no debug), não consegui referencias pra resolver.
             Toast.makeText(getContext(), "Job Service Agendado", Toast.LENGTH_SHORT).show();
         }
 

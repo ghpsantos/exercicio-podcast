@@ -112,12 +112,11 @@ public class XmlFeedParser {
         }
         return result;
     }
-    //TODO verificar se é um padrão do enclosure a url vir como primeiro atributo
     // Processa tags do tipo <enclosure> para obter dados do episodio
     public static String readEnclosure(XmlPullParser parser)
             throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, null, "enclosure");
-        //Estou recuperando apenas o primeiro atributo da tag enclosure, que é o link
+        //retrieve from enclosure url's attribute
         return parser.getAttributeValue(0);
     }
 

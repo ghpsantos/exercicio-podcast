@@ -88,7 +88,6 @@ public class DownloadAndPersistXmlService extends IntentService {
     }
 
 
-    //TODO Opcional - pesquise outros meios de obter arquivos da internet
     private String getRssFeed(String feed) throws IOException {
         InputStream in = null;
         String rssFeed = "";
@@ -111,21 +110,3 @@ public class DownloadAndPersistXmlService extends IntentService {
         return rssFeed;
     }
 }
-//
-//
-
-
-//
-//    final Intent notificationIntent = new Intent(getApplicationContext(), DownloadAndPersistXmlService.class);
-//    final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-//
-//    final Notification notification = new Notification.Builder(
-//            getApplicationContext())
-//            .setSmallIcon(android.R.drawable.ic_media_play)
-//            .setOngoing(true).setContentTitle("Music Service rodando")
-//            .setContentText("Clique para acessar o player!")
-//            .setContentIntent(pendingIntent).build();
-//
-//    // inicia em estado foreground, para ter prioridade na memoria
-//    // evita que seja facilmente eliminado pelo sistema
-//    startForeground(NOTIFICATION_ID, notification);

@@ -52,10 +52,8 @@ public class MainActivity extends Activity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
     private final String RSS_FEED = "http://leopoldomt.com/if710/fronteirasdaciencia.xml";
-    //TODO teste com outros links de podcast
 
     private ListView items;
-//    private List<ItemFeed> feedToOnCompleteDownload;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -72,7 +70,7 @@ public class MainActivity extends Activity {
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicPaused, f_m);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicEnded, f_e);
 
-
+        //forcing permission
         if (!podeEscrever()) {
             requestPermissions(STORAGE_PERMISSIONS, WRITE_EXTERNAL_STORAGE_REQUEST);
         }
@@ -103,6 +101,7 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
+        //when start execute DownloadAndPersist service
         Intent downloadAndPersistXmlService = new Intent(this, DownloadAndPersistXmlService.class);
         downloadAndPersistXmlService.putExtra("rss", RSS_FEED);
         startService(downloadAndPersistXmlService);
@@ -161,6 +160,7 @@ public class MainActivity extends Activity {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
+    //when finish download Episode, update the database and view
     private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
             int selectedItem = i.getIntExtra("selectedItem", 0);
@@ -191,7 +191,7 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            //activity running
+            //verify if MainActivity is running
             if (MainActivity.this.getWindow().getDecorView().getRootView().isShown()) {
                 // retrieving from database and setting view
                 ContentResolver cr = getContentResolver();
@@ -209,13 +209,13 @@ public class MainActivity extends Activity {
                     itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri, currentPosition));
                 }
 
-//            ((MainActivity.this).feedToOnCompleteDownload) = itemFeeds;
                 //Adapter Personalizado
                 XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
 
                 //atualizar o list view
                 items.setAdapter(adapter);
                 items.setTextFilterEnabled(true);
+                //when clicked goes to EpisodeDetailActivity
                 items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -228,7 +228,7 @@ public class MainActivity extends Activity {
                     }
                 });
             } else {
-                //foreground
+                //if MainActivity is in foreground creates a notification
                 final Intent notificationIntent = new Intent(context, MainActivity.class);
                 final PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 
@@ -249,6 +249,7 @@ public class MainActivity extends Activity {
         }
     };
 
+    //when music paused, update the database with the currentTime and set view
     private BroadcastReceiver onMusicPaused = new BroadcastReceiver() {
 
         @Override
@@ -268,19 +269,19 @@ public class MainActivity extends Activity {
                     cv,
                     selection,
                     selectionArgs);
+
             //seta a tela
             itemFeed.setCurrentPosition(currentPosition);
-
             ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
         }
     };
 
+    //when music end, delete episode and update database
     private BroadcastReceiver onMusicEnded = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             int endedItemPosition = intent.getIntExtra("itemPlaying", 0);
-            Toast.makeText(context, "ACABOU " + intent.getIntExtra("itemPlaying", 0), Toast.LENGTH_SHORT).show();
 
             ItemFeed endedItem = (ItemFeed) items.getItemAtPosition(endedItemPosition);
             File file = new File(endedItem.getUri());

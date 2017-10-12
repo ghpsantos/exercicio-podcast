@@ -75,8 +75,6 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
-        //setting On click button.
-//        final Button downloadButton = (Button)convertView.findViewById(R.id.item_action);
 
         if(getItem(position).getUri()!=null){
             holder.item_action.setEnabled(true);
@@ -90,6 +88,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
             @Override
             public void onClick(View view) {
+                //when button clicked without uri, download Podcast episode
                 if(getItem(position).getUri()==null){
                     ((Button)view).setEnabled(false);
                     Intent downloadService = new Intent(getContext(),EpisodeDownloadService.class);
@@ -99,6 +98,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     downloadService.putExtra("selectedItem",position);
                     getContext().startService(downloadService);
                 }else{
+                    //if has uri, play podcast, starting on paused point
                     Intent musicIntent = new Intent(getContext(),MusicPlayerService.class);
                     musicIntent.setData(Uri.parse(getItem(position).getUri()));
                     musicIntent.putExtra("selectedPosition",position);

@@ -5,12 +5,8 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import java.io.IOException;
-
-import br.ufpe.cin.if710.podcast.domain.ItemFeed;
-
 
 public class MusicPlayerService extends Service {
     private final String TAG = "MusicPlayerNoBindingService";
@@ -23,14 +19,13 @@ public class MusicPlayerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-//         configurar media player
+        //init player
         mPlayer = new MediaPlayer();
 
         //nao deixa entrar em loop
         mPlayer.setLooping(false);
 
-        // executa o release do player quando terminar a musica
+        // when music end, send broadcast music_ended and reset player
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
@@ -49,31 +44,28 @@ public class MusicPlayerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         if (null != mPlayer) {
+            //if music is playing, reset player(pause), get current position and send broadcast
             if (mPlayer.isPlaying()) {
                 int currentPosition = mPlayer.getCurrentPosition();
                 mPlayer.reset();
                 Intent musicPaused = new Intent(MUSIC_PAUSED);
-                musicPaused.putExtra("selectedPosition", intent.getIntExtra("selectedPosition",0));
+                musicPaused.putExtra("selectedPosition", intent.getIntExtra("selectedPosition", 0));
                 musicPaused.putExtra("currentPosition", currentPosition);
                 LocalBroadcastManager.getInstance(this).sendBroadcast(musicPaused);
             } else {
                 try {
+                    //set player with current position and start playing.
                     mPlayer.setDataSource(this, intent.getData());
                     mPlayer.prepare();
-//                    Podcast Position
-                    int currentPosition = intent.getIntExtra("currentPosition",0);
-//                    itemPlaying >-
-                    itemPlaying =  intent.getIntExtra("selectedPosition",0);
+                    int currentPosition = intent.getIntExtra("currentPosition", 0);
+                    itemPlaying = intent.getIntExtra("selectedPosition", 0);
                     mPlayer.seekTo(currentPosition);
                     mPlayer.start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                // inicia musica
-
             }
         }
-        // nao reinicia service automaticamente se for eliminado
         return START_NOT_STICKY;
 
     }
@@ -88,11 +80,8 @@ public class MusicPlayerService extends Service {
 
     }
 
-    //nao eh possivel fazer binding com este service
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
-        //return null;
     }
 }
