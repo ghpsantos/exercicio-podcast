@@ -16,6 +16,9 @@ import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.managers.jobscheduler.DownloadAndPersistJob;
 //import br.ufpe.cin.if710.podcast.managers.jobscheduler.DownloadAndPersistJob;
@@ -34,7 +37,8 @@ public class SettingsActivity extends Activity {
     public static class FeedPreferenceFragment extends PreferenceFragment {
 
         private Preference timeToLoadPref;
-//        @RequiresApi(api = Build.VERSION_CODES.N)
+
+        //        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -53,7 +57,7 @@ public class SettingsActivity extends Activity {
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                     feedLinkPref.setSummary(sharedPreferences.getString(FEED_LINK, getActivity().getResources().getString(R.string.feed_link)));
-                    timeToLoadPref.setSummary(sharedPreferences.getString(TIME_TO_LOAD,"200"));
+                    timeToLoadPref.setSummary(sharedPreferences.getString(TIME_TO_LOAD, "200"));
                 }
             };
 
@@ -69,40 +73,51 @@ public class SettingsActivity extends Activity {
 
             Preference button = getPreferenceManager().findPreference("scheduler_button");
             button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-//                @RequiresApi(api = Build.VERSION_CODES.M)
+                //                @RequiresApi(api = Build.VERSION_CODES.M)
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     agendarJob();
-                    Toast.makeText(getContext(), "Works", Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
+
+            Preference cancel_button = getPreferenceManager().findPreference("cancel_scheduler_button");
+
+            cancel_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    cancelarJobs();
+                    Toast.makeText(getContext(), "Agendamento cancelado", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+
+
         }
+
         protected static final String TAG = "FeedPreferenceFragment";
         private SharedPreferences.OnSharedPreferenceChangeListener mListener;
         private Preference feedLinkPref;
 
 
-        static protected JobScheduler jobScheduler;
+        JobScheduler jobScheduler;
 
-//        @RequiresApi(api = Build.VERSION_CODES.N)
         private void agendarJob() {
 
             JobInfo.Builder b = new JobInfo.Builder(JOB_ID, new ComponentName(getContext(), DownloadAndPersistJob.class));
-            PersistableBundle pb=new PersistableBundle();
+            PersistableBundle pb = new PersistableBundle();
             SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
 
-            pb.putString(FEED_LINK,prefs.getString(FEED_LINK,""));
+            pb.putString(FEED_LINK, prefs.getString(FEED_LINK, ""));
             b.setExtras(pb);
 
             //criterio de rede
             b.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-            //b.setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE);
 
             //define intervalo de periodicidade
-//            Toast.makeText(getContext(), prefs.getString(TIME_TO_LOAD,"3000") , Toast.LENGTH_SHORT).show();
-
-//            b.setPeriodic(Long.parseLong(prefs.getString(TIME_TO_LOAD, "3000")),3000);
+            long timeInMillis = TimeUnit.MINUTES.toMillis(Long.parseLong(prefs.getString(TIME_TO_LOAD, "3000")));
+            Toast.makeText(getContext(), "" + timeInMillis, Toast.LENGTH_SHORT).show();
+            b.setPeriodic(timeInMillis);
 
             //exige (ou nao) que esteja conectado ao carregador
             b.setRequiresCharging(false);
@@ -114,24 +129,13 @@ public class SettingsActivity extends Activity {
             //exige (ou nao) que dispositivo esteja idle
             b.setRequiresDeviceIdle(false);
 
-            //backoff criteria (linear ou exponencial)
-            //b.setBackoffCriteria(1500, JobInfo.BACKOFF_POLICY_EXPONENTIAL);
+            jobScheduler.schedule(b.build());
 
-            //periodo de tempo minimo pra rodar
-            //so pode ser chamado se nao definir setPeriodic...
-            b.setMinimumLatency(Integer.parseInt(prefs.getString(TIME_TO_LOAD,"3000")));
+            Toast.makeText(getContext(), "Job Service Agendado ", Toast.LENGTH_SHORT).show();
+        }
 
-            //mesmo que criterios nao sejam atingidos, define um limite de tempo
-            //so pode ser chamado se nao definir setPeriodic...
-//            b.setOverrideDeadline(Integer.parseInt(prefs.getString(TIME_TO_LOAD,"3000")));
-
-             jobScheduler.schedule(b.build());
-//            if (ret == JobScheduler.RESULT_SUCCESS) {
-//                Log.e(TAG, "Job scheduled successfully");
-//            } else {
-//                Log.e(TAG, "Job scheduling failed");
-//            }
-            Toast.makeText(getContext(), "Job Service Agendado", Toast.LENGTH_SHORT).show();
+        private void cancelarJobs() {
+            jobScheduler.cancel(JOB_ID);
         }
     }
 

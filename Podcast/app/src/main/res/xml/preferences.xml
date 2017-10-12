@@ -13,16 +13,18 @@
 
     <EditTextPreference
         android:dialogTitle="Mudar tempo de carregamento"
-        android:dialogMessage="Digite o novo tempo de carregamento"
+        android:dialogMessage="Digite o novo tempo de carregamento em minutos (min 15)"
         android:key="timeToLoad"
         android:negativeButtonText="@string/cancel"
         android:positiveButtonText="Modificar"
         android:title="Tempo de Carregamento"
-        android:defaultValue="200" />
+        android:defaultValue="15" />
 
 
         <PreferenceCategory>
-            <Preference android:title="Agendar Atualizações" android:key="scheduler_button"/>
+            <Preference android:title="Clique aqui para Agendar" android:key="scheduler_button"/>
+            <Preference android:title="Clique para cancelar os agendamentos" android:key="cancel_scheduler_button"/>
         </PreferenceCategory>
+
 
 </PreferenceScreen>
