@@ -32,6 +32,7 @@ public class MusicPlayerService extends Service {
             public void onCompletion(MediaPlayer mp) {
                 // encerra se foi iniciado com o mesmo ID
 //                stopSelf(mStartID);
+                //TODO INIT A SERVICE THAT DELETE THE PODCAST
                 mPlayer.release();
             }
         });

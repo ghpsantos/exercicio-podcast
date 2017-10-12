@@ -20,4 +20,9 @@
         android:title="Tempo de Carregamento"
         android:defaultValue="200" />
 
+
+        <PreferenceCategory>
+            <Preference android:title="Agendar Atualizações" android:key="scheduler_button"/>
+        </PreferenceCategory>
+
 </PreferenceScreen>
