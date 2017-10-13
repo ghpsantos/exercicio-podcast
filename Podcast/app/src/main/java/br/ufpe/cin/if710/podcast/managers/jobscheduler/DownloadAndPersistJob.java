@@ -27,7 +27,7 @@ public class DownloadAndPersistJob extends JobService {
 
         if (downloadLink != null) {
             Intent downloadService = new Intent(getApplicationContext(), DownloadAndPersistXmlService.class);
-            downloadService.setData(Uri.parse(downloadLink));
+            downloadService.putExtra("rss", downloadLink);
             getApplicationContext().startService(downloadService);
             return true;
         }

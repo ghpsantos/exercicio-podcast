@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.RequiresApi;
@@ -40,12 +41,11 @@ public class SettingsActivity extends Activity {
         private SharedPreferences.OnSharedPreferenceChangeListener mListener;
         private Preference feedLinkPref;
         private JobScheduler jobScheduler;
-        private Preference timeToLoadPref;
+        private ListPreference timeToLoadPref;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-
             jobScheduler = (JobScheduler) getContext().getSystemService(JOB_SCHEDULER_SERVICE);
 
             // carrega preferences de um recurso XML em /res/xml
@@ -53,14 +53,17 @@ public class SettingsActivity extends Activity {
 
             // pega o valor atual de FeedLink
             feedLinkPref = (Preference) getPreferenceManager().findPreference(FEED_LINK);
-            timeToLoadPref = (Preference) getPreferenceManager().findPreference(TIME_TO_LOAD);
+            timeToLoadPref = (ListPreference)getPreferenceManager().findPreference(TIME_TO_LOAD);
+
+            //setting values
+            timeToLoadPref.setEntries(R.array.time_names);
+            timeToLoadPref.setEntryValues(R.array.time_values);
 
             // cria listener para atualizar summary ao modificar link do feed
             mListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                     feedLinkPref.setSummary(sharedPreferences.getString(FEED_LINK, getActivity().getResources().getString(R.string.feed_link)));
-                    timeToLoadPref.setSummary(sharedPreferences.getString(TIME_TO_LOAD, "200"));
                 }
             };
 
@@ -72,7 +75,6 @@ public class SettingsActivity extends Activity {
 
             // força chamada ao metodo de callback para exibir link atual
             mListener.onSharedPreferenceChanged(prefs, FEED_LINK);
-            mListener.onSharedPreferenceChanged(prefs, TIME_TO_LOAD);
 
             Preference button = getPreferenceManager().findPreference("scheduler_button");
             button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -95,7 +97,6 @@ public class SettingsActivity extends Activity {
                 }
             });
 
-
         }
 
         private void agendarJob() {
@@ -111,7 +112,7 @@ public class SettingsActivity extends Activity {
             b.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
 
             //define intervalo de periodicidade
-            long timeInMillis = TimeUnit.MINUTES.toMillis(Long.parseLong(prefs.getString(TIME_TO_LOAD, "3000")));
+            long timeInMillis = Long.parseLong(timeToLoadPref.getValue());
             b.setPeriodic(timeInMillis);
 
             //exige (ou nao) que esteja conectado ao carregador

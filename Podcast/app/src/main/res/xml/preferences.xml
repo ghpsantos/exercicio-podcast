@@ -3,28 +3,27 @@
     android:key="@+id/pref_screen">
 
     <EditTextPreference
-        android:dialogTitle="@string/pref_title"
+        android:defaultValue="@string/feed_link"
         android:dialogMessage="@string/pref_msg"
+        android:dialogTitle="@string/pref_title"
         android:key="feedlink"
         android:negativeButtonText="@string/cancel"
         android:positiveButtonText="@string/change"
-        android:title="@string/pref_desc"
-        android:defaultValue="@string/feed_link" />
+        android:title="@string/pref_desc" />
 
-    <EditTextPreference
-        android:dialogTitle="Mudar tempo de carregamento"
-        android:dialogMessage="Digite o novo tempo de carregamento em minutos (min 15)"
-        android:key="timeToLoad"
-        android:negativeButtonText="@string/cancel"
-        android:positiveButtonText="Modificar"
-        android:title="Tempo de Carregamento"
-        android:defaultValue="15" />
+    <ListPreference android:key="timeToLoad"
+        android:title="Tempo de carregamento"
+        android:summary="Clique para selecionar o tempo"></ListPreference>
 
 
-        <PreferenceCategory>
-            <Preference android:title="Clique aqui para Agendar" android:key="scheduler_button"/>
-            <Preference android:title="Clique para cancelar os agendamentos" android:key="cancel_scheduler_button"/>
-        </PreferenceCategory>
+    <PreferenceCategory>
+        <Preference
+            android:key="scheduler_button"
+            android:title="Clique aqui para Agendar" />
+        <Preference
+            android:key="cancel_scheduler_button"
+            android:title="Clique para cancelar os agendamentos" />
+    </PreferenceCategory>
 
 
 </PreferenceScreen>
