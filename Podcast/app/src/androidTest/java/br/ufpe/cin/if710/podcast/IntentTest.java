@@ -26,10 +26,13 @@ import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 import static android.os.SystemClock.sleep;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtra;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.toPackage;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withTagKey;
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.Matchers.allOf;
@@ -63,30 +66,10 @@ public class IntentTest {
 //                .atPosition(14)
 //                .onChildView(withId(R.id.item_action))
 //                .perform(click());
+////                .check(matches(isDisplayed()));
 //
-//        Thread.sleep(2000);
 //
 //        intended(toPackage("br.ufpe.cin.if710.podcast"));
 //    }
 
-//    @Test
-//    public void Intent() throws InterruptedException {
-//         onData(anything())
-//                .inAdapterView(withId(R.id.pref_screen));
-////                .atPosition(14)
-////                .onChildView(withId(R.id.item_action))
-////                .perform(click());
-////
-////        Thread.sleep(2000);
-////
-////        intended(toPackage("br.ufpe.cin.if710.podcast"));
-//    }
-
-//    @Test
-//    public void useAppContext() throws Exception {
-//        // Context of the app under test.
-//        Context appContext = InstrumentationRegistry.getTargetContext();
-//
-//        assertEquals("br.ufpe.cin.if710.podcast", appContext.getPackageName());
-//    }
 }
