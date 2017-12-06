@@ -5,55 +5,88 @@ package br.ufpe.cin.if710.podcast;
  */
 
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+
+import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
-import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import br.ufpe.cin.if710.podcast.ui.MainActivity;
+import java.io.Serializable;
 
+import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.ui.MainActivity;
+import br.ufpe.cin.if710.podcast.ui.SettingsActivity;
+import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
+
+import static android.os.SystemClock.sleep;
 import static android.support.test.espresso.Espresso.onData;
-import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtra;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.toPackage;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static org.hamcrest.CoreMatchers.any;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 public class IntentTest {
     @Rule
-    public final ActivityTestRule<MainActivity> main = new ActivityTestRule(MainActivity.class, true);
-
+    public final IntentsTestRule<MainActivity> main = new IntentsTestRule<>(MainActivity.class, true);
 
     @Before
     public void waitForActivityLoad() throws InterruptedException {
-        Thread.sleep(2000);
+        sleep(4000);
     }
 
+
     @Test
-    public void testClick() throws InterruptedException {
+    public void itemDetailClickIntent() {
         onData(anything())
                 .inAdapterView(withId(R.id.items))
                 .atPosition(14)
                 .perform(click());
+
+        intended(allOf(toPackage("br.ufpe.cin.if710.podcast"), hasExtra(any(String.class),any(ItemFeed.class))));
     }
 
-    @Test
-    public void useAppContext() throws Exception {
-        // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+//    @Test
+//    public void itemDownloadClickIntent() throws InterruptedException {
+//         onData(anything())
+//                .inAdapterView(withId(R.id.items))
+//                .atPosition(14)
+//                .onChildView(withId(R.id.item_action))
+//                .perform(click());
+//
+//        Thread.sleep(2000);
+//
+//        intended(toPackage("br.ufpe.cin.if710.podcast"));
+//    }
 
-        assertEquals("br.ufpe.cin.if710.podcast", appContext.getPackageName());
-    }
+//    @Test
+//    public void Intent() throws InterruptedException {
+//         onData(anything())
+//                .inAdapterView(withId(R.id.pref_screen));
+////                .atPosition(14)
+////                .onChildView(withId(R.id.item_action))
+////                .perform(click());
+////
+////        Thread.sleep(2000);
+////
+////        intended(toPackage("br.ufpe.cin.if710.podcast"));
+//    }
 
+//    @Test
+//    public void useAppContext() throws Exception {
+//        // Context of the app under test.
+//        Context appContext = InstrumentationRegistry.getTargetContext();
+//
+//        assertEquals("br.ufpe.cin.if710.podcast", appContext.getPackageName());
+//    }
 }
