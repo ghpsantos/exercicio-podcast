@@ -31,7 +31,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(XmlFeedParser.class)
-public class XmlParserTest {
+public class XmlParserUnitTest {
 
     private final String RSS_FEED = "http://leopoldomt.com/if710/fronteirasdaciencia.xml";
 
