@@ -46,7 +46,7 @@ Esta classe testa funcionalidades relacionadas à base de dados. Há dois métod
 No primeiro, mockamos o comportamento correto de uma inserção no banco de dados. No segundo verificamos o comportamento do sucesso de uma atualização de um item no banco de dados.
 
 ```java
-	@Test
+    @Test
     public void isInsertingAItemProperly() throws Exception {
         //mocking methods and classes
         PodcastProvider podcastProvider = mock(PodcastProvider.class);
@@ -116,7 +116,7 @@ Para essa categoria, realizamos os seguintes testes que são detalhados por clas
 Esta classe verifica o comportamento dos Intents do sistema. Há um método chamado *itemDetailClickIntent* que verifica se o clique em um item na lista da *MainActivity* dispara o Intent corretamente para a view a ser aberta.
 
 ```java
-	 @Test
+    @Test
     public void itemDetailClickIntent() {
         onData(anything())
                 .inAdapterView(withId(R.id.items))
@@ -137,7 +137,7 @@ com um any() da classe esperada. Além disto, nossa tela inicial demora a carreg
 Esta classe verifica se as funcionalidades da ActivitySettings realmente estão funcionando de acordo. Há um método chamado *isJobScheduled* que basicamente ele clica no botão para agendar o Job e verifica se ele realmente foi agendado. E o método *isJobCancelled* verifica se a funcionalidade de cancelamento está sendo realizada corretamente, basicamente ela agenda um Job e depois o cancela e verifica a existencia do mesmo no jobScheduler.
 
 ```java
-	@Test
+    @Test
     public void isJobScheduled() {
         onData(withKey("scheduler_button")).perform(click());
         JobInfo pendingJob = jobScheduler.getPendingJob(JOB_ID);
