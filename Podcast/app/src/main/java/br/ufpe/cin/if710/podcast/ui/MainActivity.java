@@ -2,7 +2,6 @@ package br.ufpe.cin.if710.podcast.ui;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,13 +13,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.media.RingtoneManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
@@ -31,17 +28,12 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
+import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
-import br.ufpe.cin.if710.podcast.db.PodcastDBHelper;
-import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
+import br.ufpe.cin.if710.podcast.db.AppDatabase;
+import br.ufpe.cin.if710.podcast.db.ItemFeedDao;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.services.DownloadAndPersistXmlService;
 import br.ufpe.cin.if710.podcast.services.EpisodeDownloadService;
@@ -52,6 +44,7 @@ public class MainActivity extends Activity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
     private final String RSS_FEED = "http://leopoldomt.com/if710/fronteirasdaciencia.xml";
+    private ItemFeedDao itemFeedDao;
 
     private ListView items;
 
@@ -100,7 +93,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-
+        itemFeedDao = AppDatabase.getDatabase(getApplicationContext()).podcastDao();
         //when start execute DownloadAndPersist service
         Intent downloadAndPersistXmlService = new Intent(this, DownloadAndPersistXmlService.class);
         downloadAndPersistXmlService.putExtra("rss", RSS_FEED);
@@ -160,31 +153,18 @@ public class MainActivity extends Activity {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
+
     //when finish download Episode, update the database and view
     private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
         public void onReceive(Context ctxt, Intent i) {
             int selectedItem = i.getIntExtra("selectedItem", 0);
             String uri = i.getStringExtra("uri");
-
             ItemFeed itemFeed = (ItemFeed) items.getItemAtPosition(selectedItem);
-
-            ContentResolver cr = getContentResolver();
-            ContentValues cv = new ContentValues();
-
-            cv.put(PodcastDBHelper.EPISODE_FILE_URI, uri);
-
-            String selection = PodcastProviderContract.DESCRIPTION + " = ? AND " + PodcastProviderContract.DATE + " = ?";
-            String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
-            cr.update(PodcastProviderContract.EPISODE_LIST_URI,
-                    cv,
-                    selection,
-                    selectionArgs);
-            //seta a tela
             itemFeed.setUri(uri);
-            ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
-
+            new UpdateItemFeedTask().execute(itemFeed);
         }
     };
+
 
     private BroadcastReceiver onDownloadAndPersistCompleteEvent = new BroadcastReceiver() {
 
@@ -193,40 +173,8 @@ public class MainActivity extends Activity {
 
             //verify if MainActivity is running
             if (MainActivity.this.getWindow().getDecorView().getRootView().isShown()) {
-                // retrieving from database and setting view
-                ContentResolver cr = getContentResolver();
-                Cursor c = cr.query(PodcastProviderContract.EPISODE_LIST_URI, null, null, null, null);
+                new SetUiOnDownloadEndTask().execute();
 
-                ArrayList<ItemFeed> itemFeeds = new ArrayList<>();
-                while (c.moveToNext()) {
-                    String title = c.getString(c.getColumnIndex(PodcastProviderContract.TITLE));
-                    String link = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
-                    String pubDate = c.getString(c.getColumnIndex(PodcastProviderContract.DATE));
-                    String description = c.getString(c.getColumnIndex(PodcastProviderContract.DESCRIPTION));
-                    String downloadLink = c.getString(c.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
-                    String uri = c.getString(c.getColumnIndex(PodcastProviderContract.EPISODE_FILE_URI));
-                    Integer currentPosition = c.getInt(c.getColumnIndex(PodcastProviderContract.CURRENT_POSITION));
-                    itemFeeds.add(new ItemFeed(title, link, pubDate, description, downloadLink, uri, currentPosition));
-                }
-
-                //Adapter Personalizado
-                XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
-
-                //atualizar o list view
-                items.setAdapter(adapter);
-                items.setTextFilterEnabled(true);
-                //when clicked goes to EpisodeDetailActivity
-                items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
-                        ItemFeed item = adapter.getItem(position);
-                        //passing an intent with the clicked item to EpisodeDetail Activity
-                        Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
-                        i.putExtra("clickedItem", item);
-                        startActivity(i);
-                    }
-                });
             } else {
                 //if MainActivity is in foreground creates a notification
                 final Intent notificationIntent = new Intent(context, MainActivity.class);
@@ -249,6 +197,54 @@ public class MainActivity extends Activity {
         }
     };
 
+    private class UpdateItemFeedTask extends AsyncTask<ItemFeed, Void, ItemFeed> {
+
+        @Override
+        protected ItemFeed doInBackground(ItemFeed... itemFeeds) {
+            itemFeedDao.update(itemFeeds[0]);
+            return itemFeeds[0];
+        }
+
+        @Override
+        protected void onPostExecute(ItemFeed itemFeed) {
+            super.onPostExecute(itemFeed);
+            ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
+        }
+    }
+
+    private class SetUiOnDownloadEndTask extends AsyncTask<Void, Void, List<ItemFeed>> {
+        @Override
+        protected List<ItemFeed> doInBackground(Void... params) {
+            return itemFeedDao.getAll();
+        }
+
+        @Override
+        protected void onPostExecute(List<ItemFeed> itemFeeds) {
+            super.onPostExecute(itemFeeds);
+
+            //Adapter Personalizado
+            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
+
+            //atualizar o list view
+            items.setAdapter(adapter);
+            items.setTextFilterEnabled(true);
+            //when clicked goes to EpisodeDetailActivity
+            items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
+                    ItemFeed item = adapter.getItem(position);
+                    //passing an intent with the clicked item to EpisodeDetail Activity
+                    Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
+                    i.putExtra("clickedItem", item);
+                    startActivity(i);
+                }
+            });
+
+        }
+    }
+
+
     //when music paused, update the database with the currentTime and set view
     private BroadcastReceiver onMusicPaused = new BroadcastReceiver() {
 
@@ -258,21 +254,8 @@ public class MainActivity extends Activity {
             int selectedPosition = intent.getIntExtra("selectedPosition", 0);
             ItemFeed itemFeed = (ItemFeed) items.getItemAtPosition(selectedPosition);
 
-            ContentResolver cr = getContentResolver();
-            ContentValues cv = new ContentValues();
-
-            cv.put(PodcastDBHelper.CURRENT_POSITION, currentPosition);
-
-            String selection = PodcastProviderContract.DESCRIPTION + " = ? AND " + PodcastProviderContract.DATE + " = ?";
-            String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
-            cr.update(PodcastProviderContract.EPISODE_LIST_URI,
-                    cv,
-                    selection,
-                    selectionArgs);
-
-            //seta a tela
             itemFeed.setCurrentPosition(currentPosition);
-            ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
+            new UpdateItemFeedTask().execute(itemFeed);
         }
     };
 
@@ -285,23 +268,11 @@ public class MainActivity extends Activity {
 
             ItemFeed endedItem = (ItemFeed) items.getItemAtPosition(endedItemPosition);
             File file = new File(endedItem.getUri());
+
             boolean deleted = file.delete();
             if (deleted) {
-                ContentResolver cr = getContentResolver();
-                ContentValues cv = new ContentValues();
-
-                cv.put(PodcastDBHelper.EPISODE_FILE_URI, (String) null);
-
-                String selection = PodcastProviderContract.DESCRIPTION + " = ? AND " + PodcastProviderContract.DATE + " = ?";
-                String[] selectionArgs = new String[]{endedItem.getDescription(), endedItem.getPubDate()};
-                cr.update(PodcastProviderContract.EPISODE_LIST_URI,
-                        cv,
-                        selection,
-                        selectionArgs);
-                //seta a tela
                 endedItem.setUri(null);
-
-                ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
+                new UpdateItemFeedTask().execute(endedItem);
             } else {
                 Toast.makeText(context, "Arquivo não deletado " + intent.getIntExtra("itemPlaying", 0), Toast.LENGTH_SHORT).show();
             }

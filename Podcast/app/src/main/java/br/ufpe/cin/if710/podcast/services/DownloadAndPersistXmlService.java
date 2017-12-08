@@ -24,12 +24,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import br.ufpe.cin.if710.podcast.R;
-import br.ufpe.cin.if710.podcast.db.PodcastDBHelper;
-import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
+import br.ufpe.cin.if710.podcast.db.AppDatabase;
+import br.ufpe.cin.if710.podcast.db.ItemFeedDao;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
-import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 
 public class DownloadAndPersistXmlService extends IntentService {
 
@@ -54,37 +52,15 @@ public class DownloadAndPersistXmlService extends IntentService {
 
         //inserting new data trough iterator
         Iterator<ItemFeed> ifIterator = itemList.iterator();
-        ContentResolver cr;
-        ContentValues cv = new ContentValues();
 
+        ItemFeedDao itemFeedDao = AppDatabase.getDatabase(getApplicationContext()).podcastDao();
         while (ifIterator.hasNext()) {
             ItemFeed itemFeed = ifIterator.next();
-
-            //if not exists in database, create
-            ContentResolver crExists = getContentResolver();
-            String selection = PodcastProviderContract.DESCRIPTION + " =? AND " + PodcastProviderContract.DATE + " =?";
-            String[] selectionArgs = new String[]{itemFeed.getDescription(), itemFeed.getPubDate()};
-            Cursor existsItem = crExists.query(PodcastProviderContract.EPISODE_LIST_URI,
-                    PodcastProviderContract.ALL_COLUMNS,
-                    selection,
-                    selectionArgs,
-                    null);
-
-            if (existsItem.getCount() == 0) {
-                //data
-                cr = getContentResolver();
-                cv.put(PodcastDBHelper.EPISODE_TITLE, itemFeed.getTitle());
-                cv.put(PodcastDBHelper.EPISODE_LINK, itemFeed.getLink());
-                cv.put(PodcastDBHelper.EPISODE_DATE, itemFeed.getPubDate());
-                cv.put(PodcastDBHelper.EPISODE_DESC, itemFeed.getDescription());
-                cv.put(PodcastDBHelper.EPISODE_DOWNLOAD_LINK, itemFeed.getDownloadLink());
-
-                cr.insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
-            }
+            itemFeedDao.insert(itemFeed);
         }
 
         Intent downloadAndPersistComplete = new Intent(DOWNLOAD_AND_PERSIST_XML_COMPLETE);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(downloadAndPersistComplete);
+       LocalBroadcastManager.getInstance(this).sendBroadcast(downloadAndPersistComplete);
     }
 
 
