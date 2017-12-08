@@ -9,10 +9,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import br.ufpe.cin.if710.podcast.db.PodcastProvider;
-import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
+import br.ufpe.cin.if710.podcast.db.AppDatabase;
+import br.ufpe.cin.if710.podcast.db.ItemFeedDao;
+import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 
 import static junit.framework.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -23,63 +25,28 @@ import static org.mockito.Mockito.when;
  * Created by Guilherme on 05/12/2017.
  */
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Uri.class})
 public class DatabaseUnitTest {
-
 
     @Test
     public void isInsertingAItemProperly() throws Exception {
+        ItemFeedDao itemFeedDao = mock(ItemFeedDao.class);
+        ItemFeed itemFeed = new ItemFeed("Aliens","somesitelink.com","05/09/1995","lorem ipsum","somedownloadsite.com","someuri.com",1);
         //mocking methods and classes
-        PodcastProvider podcastProvider = mock(PodcastProvider.class);
-        ContentValues contentValues = mock(ContentValues.class);
-        PowerMockito.mockStatic(Uri.class);
-        Uri succesUri = mock(Uri.class);
-        Uri episodeUri = mock(Uri.class);
+        when(itemFeedDao.insert(any(ItemFeed.class))).thenReturn(1L);
 
-        when(podcastProvider.insert(episodeUri, contentValues)).thenReturn(succesUri);
-        doNothing().when(contentValues).put(anyString(),anyString());
-        doNothing().when(contentValues).put(anyString(),anyInt());
-
-        //test start
-        contentValues.put(PodcastProviderContract.DESCRIPTION,"Aliens");
-        contentValues.put(PodcastProviderContract.EPISODE_LINK,"somesite.com");
-        contentValues.put(PodcastProviderContract.DATE,"05/09/1995");
-        contentValues.put(PodcastProviderContract.DESCRIPTION,"lorem ipsum");
-        contentValues.put(PodcastProviderContract.EPISODE_FILE_URI,"someuri.com");
-        contentValues.put(PodcastProviderContract.CURRENT_POSITION,1);
-
-        Uri insertResult = podcastProvider.insert(episodeUri, contentValues);
-
-        assertEquals(insertResult,succesUri);
+        long insertResult = itemFeedDao.insert(itemFeed);
+        assertEquals(insertResult,1L);
     }
 
-    String [] selectionArgs = new String[]{
-        "arg1", "arg2"
-    };
     @Test
     public void isUpdatingAItemProperly() throws Exception {
+        ItemFeedDao itemFeedDao = mock(ItemFeedDao.class);
+        ItemFeed itemFeed = new ItemFeed("Aliens","somesitelink.com","05/09/1995","lorem ipsum","somedownloadsite.com","someuri.com",1);
         //mocking methods and classes
-        PodcastProvider podcastProvider = mock(PodcastProvider.class);
-        ContentValues contentValues = mock(ContentValues.class);
-        PowerMockito.mockStatic(Uri.class);
-        Uri episodeUri = mock(Uri.class);
+        when(itemFeedDao.update(any(ItemFeed.class))).thenReturn(1);
 
-        when(podcastProvider.update(episodeUri,contentValues,"", selectionArgs)).thenReturn(1);
-        doNothing().when(contentValues).put(anyString(),anyString());
-        doNothing().when(contentValues).put(anyString(),anyInt());
-
-        //setting values to update
-        contentValues.put(PodcastProviderContract.DESCRIPTION,"Aliens");
-        contentValues.put(PodcastProviderContract.EPISODE_LINK,"somesite.com");
-        contentValues.put(PodcastProviderContract.DATE,"05/09/1995");
-        contentValues.put(PodcastProviderContract.DESCRIPTION,"lorem ipsum");
-        contentValues.put(PodcastProviderContract.EPISODE_FILE_URI,"someuri.com");
-        contentValues.put(PodcastProviderContract.CURRENT_POSITION,1);
-
-        int updateResult = podcastProvider.update(episodeUri, contentValues, "", selectionArgs);
-
-        assertEquals(updateResult,1);
+        int insertResult = itemFeedDao.update(itemFeed);
+        assertEquals(insertResult,1);
 
     }
 }
