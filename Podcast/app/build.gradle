@@ -11,7 +11,7 @@ allprojects {
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "br.ufpe.cin.if710.podcast"
         minSdkVersion 24
@@ -45,6 +45,11 @@ dependencies {
 
     compile "android.arch.persistence.room:runtime:1.0.0"
     annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+
+    implementation "android.arch.lifecycle:extensions:1.0.0"
+
+    compile 'com.android.support:support-compat:26.+'
+    compile "com.android.support:appcompat-v7:26.+"
 
     androidTestCompile 'com.android.support:support-annotations:26.+'
     androidTestCompile 'com.android.support:recyclerview-v7:26.+'
