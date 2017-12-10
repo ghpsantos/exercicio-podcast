@@ -45,7 +45,7 @@ public class IntentTest {
 
     @Before
     public void waitForActivityLoad() throws InterruptedException {
-        sleep(4000);
+        sleep(10000);
     }
 
 
