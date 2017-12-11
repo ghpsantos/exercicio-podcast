@@ -20,7 +20,7 @@ import static android.os.SystemClock.sleep;
  */
 
 public class ItemFeedViewModel extends AndroidViewModel {
-
+    private LiveData<List<ItemFeed>> itemsFeeds;
 
     private ItemFeedDao itemFeedDao;
 
@@ -28,10 +28,11 @@ public class ItemFeedViewModel extends AndroidViewModel {
         super(application);
 
         itemFeedDao = AppDatabase.getDatabase(application).podcastDao();
+        itemsFeeds = itemFeedDao.getAll();
     }
 
     public LiveData<List<ItemFeed>> getAllItemsFeeds(){
-        return itemFeedDao.getAll();
+        return itemsFeeds;
     }
 
 
@@ -50,22 +51,21 @@ public class ItemFeedViewModel extends AndroidViewModel {
     }
 
 
-    public void update3rd(){
-       new Remove3RD().execute();
-    }
-
-    private class Remove3RD extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            while(true) {
-                sleep(10000);
-                itemFeedDao.update3rd(UUID.randomUUID().toString().substring(0,7));
-            }
-        }
-
-    }
-
+//    public void update3rd(){
+//       new Remove3RD().execute();
+//    }
+//
+//    private class Remove3RD extends AsyncTask<Void, Void, Void> {
+//
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//            while(true) {
+//                sleep(10000);
+//                itemFeedDao.update3rd(UUID.randomUUID().toString().substring(0,7));
+//            }
+//        }
+//
+//    }
 
 
 }

@@ -76,8 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable List<ItemFeed> itemFeeds) {
                 if (itemFeeds != null) {
-                    adapter.clear();
-                    adapter.addAllItems(itemFeeds);
+                    adapter.addAll(itemFeeds);
                 }
             }
         });
@@ -192,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            itemFeedViewModel.update3rd();
+//            itemFeedViewModel.update3rd();
 
             //verify if MainActivity is running
             if (MainActivity.this.getWindow().getDecorView().getRootView().isShown()) {
