@@ -1,16 +1,12 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -37,8 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
-import br.ufpe.cin.if710.podcast.db.AppDatabase;
-import br.ufpe.cin.if710.podcast.db.ItemFeedDao;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.viewmodel.ItemFeedViewModel;
 import br.ufpe.cin.if710.podcast.services.DownloadAndPersistXmlService;
@@ -81,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
         itemFeedViewModel.getAllItemsFeeds().observe(MainActivity.this, new Observer<List<ItemFeed>>() {
             @Override
             public void onChanged(@Nullable List<ItemFeed> itemFeeds) {
-                if(itemFeeds != null){
-                    adapter.addAll(itemFeeds);
+                if (itemFeeds != null) {
+                    adapter.clear();
+                    adapter.addAllItems(itemFeeds);
                 }
             }
         });
@@ -197,6 +192,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            itemFeedViewModel.update3rd();
+
             //verify if MainActivity is running
             if (MainActivity.this.getWindow().getDecorView().getRootView().isShown()) {
                 new SetUiOnDownloadEndTask().execute();
@@ -235,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(itemFeeds);
 
             //Adapter Personalizado
-             adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
+            adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
 
             //atualizar o list view
             items.setAdapter(adapter);
@@ -292,4 +289,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+
 }

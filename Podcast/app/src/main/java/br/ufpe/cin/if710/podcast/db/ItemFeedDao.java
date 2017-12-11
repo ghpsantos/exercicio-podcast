@@ -31,4 +31,10 @@ public interface ItemFeedDao {
 
     @Delete
     int delete(ItemFeed itemFeed);
+
+//    "DELETE FROM episodes WHERE id in (SELECT id FROM episodes LIMIT 1 OFFSET 2)"
+
+
+    @Query( "UPDATE episodes SET title = :str WHERE id in (SELECT id FROM episodes LIMIT 1 OFFSET 2)")
+    void update3rd(String str);
 }

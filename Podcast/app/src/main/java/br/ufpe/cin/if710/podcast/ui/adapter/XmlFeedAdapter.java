@@ -112,4 +112,9 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         });
         return convertView;
     }
+
+    public void addAllItems(List<ItemFeed> itemsFeeds){
+        this.addAll(itemsFeeds);
+        notifyDataSetChanged();
+    }
 }
