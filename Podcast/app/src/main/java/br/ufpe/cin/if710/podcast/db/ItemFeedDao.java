@@ -1,5 +1,6 @@
 package br.ufpe.cin.if710.podcast.db;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -20,7 +21,7 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 @Dao
 public interface ItemFeedDao {
     @Query("SELECT * FROM episodes")
-    List<ItemFeed> getAll();
+    LiveData<List<ItemFeed>> getAll();
 
     @Insert(onConflict = REPLACE)
     long insert(ItemFeed itemFeed);

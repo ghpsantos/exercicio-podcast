@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentResolver;
@@ -17,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -30,12 +33,14 @@ import android.widget.Toast;
 
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.db.AppDatabase;
 import br.ufpe.cin.if710.podcast.db.ItemFeedDao;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.domain.viewmodel.ItemFeedViewModel;
 import br.ufpe.cin.if710.podcast.services.DownloadAndPersistXmlService;
 import br.ufpe.cin.if710.podcast.services.EpisodeDownloadService;
 import br.ufpe.cin.if710.podcast.services.MusicPlayerService;
@@ -45,9 +50,13 @@ public class MainActivity extends AppCompatActivity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
     private final String RSS_FEED = "http://leopoldomt.com/if710/fronteirasdaciencia.xml";
-    private ItemFeedDao itemFeedDao;
+//    private ItemFeedDao itemFeedDao;
 
     private ListView items;
+
+    private ItemFeedViewModel itemFeedViewModel;
+
+    private XmlFeedAdapter adapter;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -55,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         items = (ListView) findViewById(R.id.items);
+        //forçando o adapter a não ser nulo
+        adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, new ArrayList<ItemFeed>());
+        items.setAdapter(adapter);
 
         IntentFilter f_d = new IntentFilter(DownloadAndPersistXmlService.DOWNLOAD_AND_PERSIST_XML_COMPLETE);
         IntentFilter f_m = new IntentFilter(MusicPlayerService.MUSIC_PAUSED);
@@ -63,6 +75,18 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadAndPersistCompleteEvent, f_d);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicPaused, f_m);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onMusicEnded, f_e);
+
+        itemFeedViewModel = ViewModelProviders.of(this).get(ItemFeedViewModel.class);
+
+        itemFeedViewModel.getAllItemsFeeds().observe(MainActivity.this, new Observer<List<ItemFeed>>() {
+            @Override
+            public void onChanged(@Nullable List<ItemFeed> itemFeeds) {
+                if(itemFeeds != null){
+                    adapter.addAll(itemFeeds);
+                }
+            }
+        });
+
 
         //forcing permission
         if (!podeEscrever()) {
@@ -94,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        itemFeedDao = AppDatabase.getDatabase(getApplicationContext()).podcastDao();
+//        itemFeedDao = AppDatabase.getDatabase(getApplicationContext()).podcastDao();
         //when start execute DownloadAndPersist service
         Intent downloadAndPersistXmlService = new Intent(this, DownloadAndPersistXmlService.class);
         downloadAndPersistXmlService.putExtra("rss", RSS_FEED);
@@ -104,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        XmlFeedAdapter adapter = (XmlFeedAdapter) items.getAdapter();
+        adapter = (XmlFeedAdapter) items.getAdapter();
         if (adapter != null) {
             adapter.clear();
         }
@@ -162,7 +186,8 @@ public class MainActivity extends AppCompatActivity {
             String uri = i.getStringExtra("uri");
             ItemFeed itemFeed = (ItemFeed) items.getItemAtPosition(selectedItem);
             itemFeed.setUri(uri);
-            new UpdateItemFeedTask().execute(itemFeed);
+            itemFeedViewModel.updateItemFeed(itemFeed);
+//            new UpdateItemFeedTask().execute(itemFeed);
         }
     };
 
@@ -198,25 +223,11 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private class UpdateItemFeedTask extends AsyncTask<ItemFeed, Void, ItemFeed> {
-
-        @Override
-        protected ItemFeed doInBackground(ItemFeed... itemFeeds) {
-            itemFeedDao.update(itemFeeds[0]);
-            return itemFeeds[0];
-        }
-
-        @Override
-        protected void onPostExecute(ItemFeed itemFeed) {
-            super.onPostExecute(itemFeed);
-            ((XmlFeedAdapter) items.getAdapter()).notifyDataSetChanged();
-        }
-    }
 
     private class SetUiOnDownloadEndTask extends AsyncTask<Void, Void, List<ItemFeed>> {
         @Override
         protected List<ItemFeed> doInBackground(Void... params) {
-            return itemFeedDao.getAll();
+            return itemFeedViewModel.getAllItemsFeeds().getValue();
         }
 
         @Override
@@ -224,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(itemFeeds);
 
             //Adapter Personalizado
-            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
+             adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
 
             //atualizar o list view
             items.setAdapter(adapter);
@@ -233,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
             items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    XmlFeedAdapter adapter = (XmlFeedAdapter) parent.getAdapter();
+                    adapter = (XmlFeedAdapter) parent.getAdapter();
                     ItemFeed item = adapter.getItem(position);
                     //passing an intent with the clicked item to EpisodeDetail Activity
                     Intent i = new Intent(getApplicationContext(), EpisodeDetailActivity.class);
@@ -256,7 +267,8 @@ public class MainActivity extends AppCompatActivity {
             ItemFeed itemFeed = (ItemFeed) items.getItemAtPosition(selectedPosition);
 
             itemFeed.setCurrentPosition(currentPosition);
-            new UpdateItemFeedTask().execute(itemFeed);
+            itemFeedViewModel.updateItemFeed(itemFeed);
+//            new UpdateItemFeedTask().execute(itemFeed);
         }
     };
 
@@ -273,7 +285,8 @@ public class MainActivity extends AppCompatActivity {
             boolean deleted = file.delete();
             if (deleted) {
                 endedItem.setUri(null);
-                new UpdateItemFeedTask().execute(endedItem);
+                itemFeedViewModel.updateItemFeed(endedItem);
+//                new UpdateItemFeedTask().execute(endedItem);
             } else {
                 Toast.makeText(context, "Arquivo não deletado " + intent.getIntExtra("itemPlaying", 0), Toast.LENGTH_SHORT).show();
             }
