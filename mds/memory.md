@@ -30,3 +30,17 @@ A Figura 4 mostra a variação do consumo de memória quando a aplicação inici
 | ![figura4.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura4.jpg) | 
 |:--:| 
 | *Figura 4* |
+
+Além disso, foi usada a ferramente LeakCanary para a detecção de leaks de memória. Felizmente nenhum leak foi encontrado na aplicação, sendo esta utilizada de várias formas para que pudesse apresentar algum gargalo.
+
+| ![figura4.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura13.jpg) | 
+|:--:| 
+| *LeakCanary* |
+
+| ![figura4.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura14.jpg) | 
+|:--:| 
+| *LeakCanary* |
+
+| ![figura4.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura15.jpg) | 
+|:--:| 
+| *LeakCanary* |
