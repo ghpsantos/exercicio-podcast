@@ -43,6 +43,9 @@ dependencies {
     testCompile 'org.powermock:powermock-module-junit4:1.6.6'
     testCompile 'org.powermock:powermock-api-mockito2:1.6.6'
 
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+
     androidTestCompile 'com.android.support:support-annotations:26.+'
     androidTestCompile 'com.android.support:recyclerview-v7:26.+'
     androidTestCompile 'com.android.support.test.espresso:espresso-contrib:2.2.2'

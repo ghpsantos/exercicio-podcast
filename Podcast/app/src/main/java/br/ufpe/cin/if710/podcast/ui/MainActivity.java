@@ -2,12 +2,10 @@ package br.ufpe.cin.if710.podcast.ui;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -15,12 +13,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
@@ -31,12 +27,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
 import br.ufpe.cin.if710.podcast.R;
@@ -74,7 +65,7 @@ public class MainActivity extends Activity {
         if (!podeEscrever()) {
             requestPermissions(STORAGE_PERMISSIONS, WRITE_EXTERNAL_STORAGE_REQUEST);
         }
-    }
+   }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -82,6 +73,7 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -131,10 +123,11 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadAndPersistCompleteEvent);
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onMusicPaused);
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onMusicEnded);
+
+        super.onDestroy();
     }
 
     //requests
