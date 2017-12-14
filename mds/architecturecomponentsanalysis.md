@@ -1,6 +1,14 @@
 ## Memória
 
-Podemos observar que após a alteração para Architecture Components, a houve um aumento considerável de memória para que a aplicação se mantivesse em primeiro plano.
+Podemos observar que após a alteração para Architecture Components, a houve um aumento considerável de memória para que a aplicação se mantivesse em primeiro plano. Não houve nenhum leak.
+
+| ![figura20.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura20.jpg) | 
+|:--:| 
+| *Figura 20* 
+
+| ![figura21.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura21.jpg) | 
+|:--:| 
+| *Figura 21* 
 
 ##CPU
 
