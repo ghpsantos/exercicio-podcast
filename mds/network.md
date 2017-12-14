@@ -1,4 +1,4 @@
-## Memória
+## Network
 
 Para essa categoria, foi realizada a análise de comportameto da rede para a aplicação de podcast.
 
@@ -27,3 +27,7 @@ Tendo o download finalizado, o tráfego de dados volta a ser 0 MB/S. Além disso
 | *Figura 8* |
 
 Da mesma forma que em primeiro plano, quando é colocado para fazer o download, e a aplicação é retirada do primeiro plano, o tráfego de dados continua o mesmo, visto que este depende apenas do serviço que está sendo rodado em background.
+
+
+## Network Após Architecture Components
+

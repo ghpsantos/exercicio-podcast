@@ -15,3 +15,6 @@ Ao iniciar a aplicação apenas uma pequena perturbação no início foi notada.
 
 Ao pressionar o botão de download de um episódio, foi possível notar que houve uma pequena perturbação por conta da execução do onClickListener do botão entre as demais tarefas.
 Não é possível analizar mais informações sobre desempenho, uma vez que a aplicação possui usabilidade limitada com apenas a função de realizar download e executar o arquivo baixado.
+
+## Performance Após Architecture Components
+
