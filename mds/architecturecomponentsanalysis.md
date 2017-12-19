@@ -25,6 +25,7 @@ Todas as métricas estão na figura abaixo:
 | *Figura 16* |
 
 Quando a rolagem é realizada, a CPU tem uma leve pertubação:
+
 | ![figura17.jpg](https://github.com/ghpsantos/exercicio-podcast/blob/master/screenshots/figura17.png) | 
 |:--:| 
 | *Figura 17* |
